@@ -75,7 +75,7 @@ export default function Navigation({ showAuthButton = false }: NavigationProps) 
                       isActive(item.href) ? 'active bg-primary/10' : ''
                     }`}
                     style={{ 
-                      color: isActive(item.href) ? 'var(--nav-black)' : 'var(--nav-black)',
+                      color: isActive(item.href) ? 'hsl(25 60% 35%)' : 'hsl(25 60% 35%)',
                     }}
                     onClick={(e) => handleNavClick(item.href, e)}
                     data-testid={`nav-${item.label.toLowerCase()}`}
@@ -105,7 +105,7 @@ export default function Navigation({ showAuthButton = false }: NavigationProps) 
                   <div className="flex items-center justify-start gap-2 p-2">
                     <div className="flex flex-col space-y-1 leading-none">
                       {(user?.firstName || user?.username) && (
-                        <p className="font-medium" data-testid="user-name" style={{color: 'var(--text-black)'}}>
+                        <p className="font-medium" data-testid="user-name">
                           {user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : user?.username || 'User'}
                         </p>
                       )}

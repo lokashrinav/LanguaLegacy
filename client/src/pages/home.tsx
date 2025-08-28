@@ -25,7 +25,7 @@ export default function Home() {
       <section className="py-12 bg-gradient-to-br from-background to-secondary/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4" style={{color: 'var(--heading-black)'}}>
+            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
               Welcome back{user?.firstName ? `, ${user.firstName}` : ''}!
             </h1>
             <p className="text-lg text-muted-foreground">
@@ -38,7 +38,7 @@ export default function Home() {
             <Card data-testid="stat-contributions">
               <CardContent className="pt-6">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-primary" style={{color: 'var(--text-black)'}}>
+                  <div className="text-2xl font-bold text-primary">
                     {statsLoading ? '...' : userStats?.totalContributions || 0}
                   </div>
                   <div className="text-sm text-muted-foreground">Contributions</div>
@@ -49,7 +49,7 @@ export default function Home() {
             <Card data-testid="stat-lessons">
               <CardContent className="pt-6">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-accent" style={{color: 'var(--text-black)'}}>
+                  <div className="text-2xl font-bold text-accent">
                     {statsLoading ? '...' : userStats?.lessonsCompleted || 0}
                   </div>
                   <div className="text-sm text-muted-foreground">Lessons Completed</div>
@@ -146,7 +146,7 @@ export default function Home() {
       <section className="py-16 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-bold" style={{color: 'var(--heading-black)'}}>Featured Languages</h2>
+            <h2 className="text-3xl font-bold text-foreground">Featured Languages</h2>
             <Link to="/discover">
               <Button variant="outline" data-testid="button-view-all">
                 View All
@@ -174,15 +174,15 @@ export default function Home() {
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between mb-4">
                       <div>
-                        <h3 className="text-lg font-semibold" style={{color: 'var(--text-black)'}}>{language.name}</h3>
+                        <h3 className="text-lg font-semibold text-foreground">{language.name}</h3>
                         <p className="text-sm text-muted-foreground">{language.region}</p>
                       </div>
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                         language.threatLevel === 'critically_endangered' 
                           ? 'bg-destructive text-destructive-foreground'
                           : language.threatLevel === 'endangered'
-                          ? 'bg-orange-100 text-orange-800'
-                          : 'bg-yellow-100 text-yellow-800'
+                          ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
+                          : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
                       }`}>
                         {language.threatLevel?.replace('_', ' ')}
                       </span>

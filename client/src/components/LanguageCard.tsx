@@ -25,11 +25,11 @@ export default function LanguageCard({ language }: LanguageCardProps) {
       case 'critically_endangered':
         return 'bg-destructive text-destructive-foreground';
       case 'endangered':
-        return 'bg-orange-100 text-orange-800';
+        return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
       case 'vulnerable':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
       case 'extinct':
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
       default:
         return 'bg-secondary text-secondary-foreground';
     }
@@ -54,7 +54,7 @@ export default function LanguageCard({ language }: LanguageCardProps) {
       <CardContent className="p-6">
         <div className="flex items-start justify-between mb-4">
           <div>
-            <h3 className="text-lg font-semibold" data-testid="language-name" style={{color: 'var(--text-black)'}}>
+            <h3 className="text-lg font-semibold text-foreground" data-testid="language-name">
               {language.name}
             </h3>
             {language.nativeName && language.nativeName !== language.name && (
@@ -77,14 +77,14 @@ export default function LanguageCard({ language }: LanguageCardProps) {
         <div className="space-y-2 mb-4">
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Speakers:</span>
-            <span className="font-medium" data-testid="language-speakers" style={{color: 'var(--text-black)'}}>
+            <span className="font-medium" data-testid="language-speakers">
               {formatSpeakers(language.speakers)}
             </span>
           </div>
           {language.family && (
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Family:</span>
-              <span className="font-medium" data-testid="language-family" style={{color: 'var(--text-black)'}}>
+              <span className="font-medium" data-testid="language-family">
                 {language.family}
               </span>
             </div>
