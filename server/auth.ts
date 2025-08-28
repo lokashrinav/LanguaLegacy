@@ -152,9 +152,11 @@ export function setupAuth(app: Express) {
   // Google login endpoint
   app.post("/api/auth/google", async (req: AuthRequest, res: Response) => {
     try {
+      console.log("Google login request body:", req.body);
       const { email, firstName, lastName, profileImageUrl, googleId } = req.body;
 
       if (!email || !googleId) {
+        console.log("Missing email or googleId:", { email, googleId });
         return res.status(400).json({ message: "Email and Google ID are required" });
       }
 

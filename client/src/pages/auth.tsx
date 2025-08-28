@@ -54,8 +54,11 @@ export default function AuthPage() {
             googleId: googleUser.uid,
           };
 
+          console.log("Sending Google user data:", userData);
           const res = await apiRequest("POST", "/api/auth/google", userData);
+          console.log("Google auth response status:", res.status);
           const user = await res.json();
+          console.log("Google auth response data:", user);
           
           queryClient.setQueryData(["/api/auth/user"], user);
           toast({
