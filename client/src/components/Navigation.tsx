@@ -54,14 +54,14 @@ export default function Navigation({ showAuthButton = false }: NavigationProps) 
   };
 
   return (
-    <nav className="border-b border-border sticky top-0 z-50" style={{ backgroundColor: 'hsl(42 35% 88%)' }} data-testid="navigation">
+    <nav className="border-b border-border sticky top-0 z-50" style={{ backgroundColor: 'hsl(30 50% 75%)' }} data-testid="navigation">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-3" data-testid="logo">
               <i className="fas fa-globe-americas text-2xl text-primary"></i>
-              <span className="text-xl font-bold" style={{ color: 'hsl(25 60% 35%)' }}>LanguaLegacy</span>
+              <span className="text-xl font-bold" style={{ color: 'hsl(30 60% 25%)' }}>LanguaLegacy</span>
             </Link>
           </div>
           
@@ -75,7 +75,7 @@ export default function Navigation({ showAuthButton = false }: NavigationProps) 
                       isActive(item.href) ? 'active bg-primary/10' : ''
                     }`}
                     style={{ 
-                      color: isActive(item.href) ? 'hsl(25 60% 35%)' : 'hsl(25 60% 35%)',
+                      color: isActive(item.href) ? 'hsl(30 60% 25%)' : 'hsl(30 60% 35%)',
                     }}
                     onClick={(e) => handleNavClick(item.href, e)}
                     data-testid={`nav-${item.label.toLowerCase()}`}
