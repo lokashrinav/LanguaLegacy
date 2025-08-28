@@ -18,7 +18,7 @@ export default function Landing() {
             <div>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
                 Preserving the
-                <span className="text-primary"> World's Languages</span>
+                <span className="text-primary"> World's Languages </span>
                 for Future Generations
               </h1>
               <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
