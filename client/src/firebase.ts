@@ -49,11 +49,18 @@ export function handleGoogleRedirect() {
   console.log("Checking for Google redirect result...");
   return getRedirectResult(auth).then(result => {
     if (result) {
-      console.log("Google redirect result:", { user: !!result.user, email: result.user?.email });
+      console.log("✅ Google redirect result found:", { 
+        user: !!result.user, 
+        email: result.user?.email,
+        uid: result.user?.uid 
+      });
     } else {
-      console.log("No redirect result found");
+      console.log("ℹ️ No redirect result found (this is normal on regular page loads)");
     }
     return result;
+  }).catch(error => {
+    console.error("❌ Error getting redirect result:", error);
+    throw error;
   });
 }
 

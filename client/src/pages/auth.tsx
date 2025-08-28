@@ -41,38 +41,49 @@ export default function AuthPage() {
   useEffect(() => {
     initFirebase();
     
-    // Handle Google redirect result
-    handleGoogleRedirect().then(async (result) => {
-      if (result && result.user) {
-        try {
-          const idToken = await result.user.getIdToken();
-          const res = await apiRequest("POST", "/api/auth/google", { idToken });
-          
-          if (res.ok) {
-            queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+    // Handle Google redirect result with delay
+    const checkRedirectResult = async () => {
+      try {
+        await new Promise(resolve => setTimeout(resolve, 100)); // Small delay
+        const result = await handleGoogleRedirect();
+        
+        if (result && result.user) {
+          console.log("Processing Google redirect result for user:", result.user.email);
+          try {
+            const idToken = await result.user.getIdToken();
+            console.log("Got ID token, sending to backend...");
+            const res = await apiRequest("POST", "/api/auth/google", { idToken });
+            
+            if (res.ok) {
+              queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+              toast({
+                title: "Welcome!",
+                description: "You have successfully signed in with Google.",
+              });
+              setLocation("/");
+            }
+          } catch (error) {
+            console.error("Google login error:", error);
             toast({
-              title: "Welcome!",
-              description: "You have successfully signed in with Google.",
+              title: "Google Login Failed",
+              description: "Failed to complete Google sign-in. Please try again.",
+              variant: "destructive",
             });
-            setLocation("/");
           }
-        } catch (error) {
-          console.error("Google login error:", error);
+        }
+      } catch (error) {
+        console.error("Google redirect error:", error);
+        if (error.message && !error.message.includes('No redirect operation')) {
           toast({
-            title: "Google Login Failed",
+            title: "Google Login Error",
             description: "Failed to complete Google sign-in. Please try again.",
             variant: "destructive",
           });
         }
       }
-    }).catch((error) => {
-      console.error("Google redirect error:", error);
-      toast({
-        title: "Google Login Error",
-        description: "Failed to complete Google sign-in. Please try again.",
-        variant: "destructive",
-      });
-    });
+    };
+    
+    checkRedirectResult();
   }, []);
 
   // Redirect if already logged in
