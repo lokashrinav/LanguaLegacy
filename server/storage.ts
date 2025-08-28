@@ -138,20 +138,22 @@ export class DatabaseStorage implements IStorage {
       conditions.push(eq(languages.threatLevel, params.threatLevel));
     }
 
-    let query = db.select().from(languages).orderBy(asc(languages.name));
+    let baseQuery = db.select().from(languages);
 
     if (conditions.length > 0) {
-      query = query.where(and(...conditions));
+      baseQuery = baseQuery.where(and(...conditions));
     }
+
+    let finalQuery = baseQuery.orderBy(asc(languages.name));
 
     if (params?.limit) {
-      query = query.limit(params.limit);
+      finalQuery = finalQuery.limit(params.limit);
     }
     if (params?.offset) {
-      query = query.offset(params.offset);
+      finalQuery = finalQuery.offset(params.offset);
     }
 
-    return await query;
+    return await finalQuery;
   }
 
   async getLanguageById(id: string): Promise<Language | undefined> {
@@ -187,20 +189,22 @@ export class DatabaseStorage implements IStorage {
       conditions.push(eq(contributions.approved, params.approved));
     }
 
-    let query = db.select().from(contributions).orderBy(desc(contributions.createdAt));
+    let baseQuery = db.select().from(contributions);
 
     if (conditions.length > 0) {
-      query = query.where(and(...conditions));
+      baseQuery = baseQuery.where(and(...conditions));
     }
+
+    let finalQuery = baseQuery.orderBy(desc(contributions.createdAt));
 
     if (params?.limit) {
-      query = query.limit(params.limit);
+      finalQuery = finalQuery.limit(params.limit);
     }
     if (params?.offset) {
-      query = query.offset(params.offset);
+      finalQuery = finalQuery.offset(params.offset);
     }
 
-    return await query;
+    return await finalQuery;
   }
 
   async getContributionById(id: string): Promise<Contribution | undefined> {
@@ -240,16 +244,20 @@ export class DatabaseStorage implements IStorage {
 
   // Learning progress operations
   async getUserLearningProgress(userId: string, languageId?: string): Promise<LearningProgress[]> {
-    let query = db.select().from(learningProgress).where(eq(learningProgress.userId, userId));
-
     if (languageId) {
-      query = query.where(and(
-        eq(learningProgress.userId, userId),
-        eq(learningProgress.languageId, languageId)
-      ));
+      return await db
+        .select()
+        .from(learningProgress)
+        .where(and(
+          eq(learningProgress.userId, userId),
+          eq(learningProgress.languageId, languageId)
+        ));
     }
 
-    return await query;
+    return await db
+      .select()
+      .from(learningProgress)
+      .where(eq(learningProgress.userId, userId));
   }
 
   async createOrUpdateLearningProgress(progress: InsertLearningProgress): Promise<LearningProgress> {
