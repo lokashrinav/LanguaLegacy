@@ -51,32 +51,36 @@ export default function Navigation({ showAuthButton = false }: NavigationProps) 
   return (
     <nav className="bg-card border-b border-border sticky top-0 z-50" data-testid="navigation">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-3" data-testid="logo">
-            <i className="fas fa-globe-americas text-2xl text-primary"></i>
-            <span className="text-xl font-bold text-foreground">LanguaLegacy</span>
-          </Link>
+          <div className="flex items-center">
+            <Link to="/" className="flex items-center space-x-3" data-testid="logo">
+              <i className="fas fa-globe-americas text-2xl text-primary"></i>
+              <span className="text-xl font-bold text-foreground">LanguaLegacy</span>
+            </Link>
+          </div>
           
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            {(isAuthenticated ? authenticatedNavItems : navItems).map((item) => (
-              <Link key={item.href} to={item.href}>
-                <span 
-                  className={`nav-link text-foreground hover:text-primary cursor-pointer ${
-                    isActive(item.href) ? 'active' : ''
-                  }`}
-                  onClick={(e) => handleNavClick(item.href, e)}
-                  data-testid={`nav-${item.label.toLowerCase()}`}
-                >
-                  {item.label}
-                </span>
-              </Link>
-            ))}
+          {/* Desktop Navigation - Centered */}
+          <div className="hidden md:flex items-center justify-center flex-1">
+            <div className="flex items-center space-x-8">
+              {(isAuthenticated ? authenticatedNavItems : navItems).map((item) => (
+                <Link key={item.href} to={item.href}>
+                  <span 
+                    className={`nav-link text-foreground hover:text-primary cursor-pointer font-medium px-3 py-2 rounded-md transition-colors duration-200 ${
+                      isActive(item.href) ? 'active text-primary bg-primary/10' : ''
+                    }`}
+                    onClick={(e) => handleNavClick(item.href, e)}
+                    data-testid={`nav-${item.label.toLowerCase()}`}
+                  >
+                    {item.label}
+                  </span>
+                </Link>
+              ))}
+            </div>
           </div>
           
           {/* User Menu / Auth Button */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center justify-end space-x-4">
             {isAuthenticated ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
