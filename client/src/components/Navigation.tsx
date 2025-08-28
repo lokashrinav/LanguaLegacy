@@ -16,11 +16,16 @@ export default function Navigation({ showAuthButton = false }: NavigationProps) 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogin = () => {
-    window.location.href = "/api/login";
+    window.location.href = "/auth";
   };
 
-  const handleLogout = () => {
-    window.location.href = "/api/logout";
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/logout", { method: "POST" });
+      window.location.reload();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
 
   const navItems = [
@@ -89,9 +94,9 @@ export default function Navigation({ showAuthButton = false }: NavigationProps) 
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-8 w-8 rounded-full" data-testid="user-menu-trigger">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={user?.profileImageUrl} alt={user?.firstName || "User"} />
+                      <AvatarImage src={user?.profileImageUrl || ""} alt={user?.firstName || "User"} />
                       <AvatarFallback>
-                        {user?.firstName?.charAt(0) || user?.email?.charAt(0) || 'U'}
+                        {user?.firstName?.charAt(0) || user?.username?.charAt(0) || user?.email?.charAt(0) || 'U'}
                       </AvatarFallback>
                     </Avatar>
                   </Button>
@@ -99,9 +104,9 @@ export default function Navigation({ showAuthButton = false }: NavigationProps) 
                 <DropdownMenuContent className="w-56" align="end" forceMount>
                   <div className="flex items-center justify-start gap-2 p-2">
                     <div className="flex flex-col space-y-1 leading-none">
-                      {user?.firstName && (
+                      {(user?.firstName || user?.username) && (
                         <p className="font-medium" data-testid="user-name">
-                          {user.firstName} {user.lastName}
+                          {user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : user?.username || 'User'}
                         </p>
                       )}
                       {user?.email && (

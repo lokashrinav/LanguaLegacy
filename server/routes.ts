@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth, isAuthenticated } from "./auth";
 import {
   insertLanguageSchema,
   insertContributionSchema,
@@ -12,19 +12,7 @@ import {
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
-  await setupAuth(app);
-
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
-  });
+  setupAuth(app);
 
   // Language routes
   app.get('/api/languages', async (req, res) => {
@@ -106,7 +94,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/contributions', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const contributionData = insertContributionSchema.parse({
         ...req.body,
         userId,
@@ -134,7 +122,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Learning progress routes
   app.get('/api/learning-progress', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { languageId } = req.query;
       
       const progress = await storage.getUserLearningProgress(userId, languageId as string);
@@ -147,7 +135,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/learning-progress', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const progressData = insertLearningProgressSchema.parse({
         ...req.body,
         userId,
@@ -163,7 +151,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/learning-progress/streak', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { languageId } = req.body;
       
       await storage.updateLearningStreak(userId, languageId);
@@ -217,7 +205,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // User lesson completion routes
   app.get('/api/lesson-completions', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { languageId } = req.query;
       
       const completions = await storage.getUserLessonCompletions(userId, languageId as string);
@@ -230,7 +218,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/lesson-completions', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const completionData = insertUserLessonCompletionSchema.parse({
         ...req.body,
         userId,
@@ -254,7 +242,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // User stats routes
   app.get('/api/user/stats', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const stats = await storage.getUserStats(userId);
       res.json(stats);
     } catch (error) {
@@ -265,7 +253,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/user/contributions/stats', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const stats = await storage.getUserContributionStats(userId);
       res.json(stats);
     } catch (error) {

@@ -10,6 +10,7 @@ import Discover from "@/pages/discover.tsx";
 import Learn from "@/pages/learn.tsx";
 import Contribute from "@/pages/contribute.tsx";
 import Dashboard from "@/pages/dashboard.tsx";
+import AuthPage from "@/pages/auth.tsx";
 import NotFound from "@/pages/not-found.tsx";
 
 function Router() {
@@ -18,7 +19,10 @@ function Router() {
   return (
     <Switch>
       {isLoading || !isAuthenticated ? (
-        <Route path="/" component={Landing} />
+        <>
+          <Route path="/" component={Landing} />
+          <Route path="/auth" component={AuthPage} />
+        </>
       ) : (
         <>
           <Route path="/" component={Home} />

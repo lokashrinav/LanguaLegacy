@@ -1,0 +1,207 @@
+import { Express, Request, Response, NextFunction } from "express";
+import session from "express-session";
+import bcrypt from "bcryptjs";
+import { storage } from "./storage";
+import connectPg from "connect-pg-simple";
+
+declare module "express-session" {
+  interface SessionData {
+    userId: string;
+  }
+}
+
+export interface AuthRequest extends Request {
+  user?: {
+    id: string;
+    email: string;
+    username?: string;
+    firstName?: string;
+    lastName?: string;
+    profileImageUrl?: string;
+  };
+}
+
+export function setupAuth(app: Express) {
+  const PostgresSessionStore = connectPg(session);
+  
+  const sessionStore = new PostgresSessionStore({
+    conString: process.env.DATABASE_URL,
+    createTableIfMissing: true,
+    tableName: "sessions",
+  });
+
+  const sessionSettings: session.SessionOptions = {
+    secret: process.env.SESSION_SECRET || "your-secret-key-here",
+    resave: false,
+    saveUninitialized: false,
+    store: sessionStore,
+    cookie: {
+      secure: false, // Set to true in production with HTTPS
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
+    },
+  };
+
+  app.use(session(sessionSettings));
+
+  // Registration endpoint
+  app.post("/api/register", async (req: AuthRequest, res: Response) => {
+    try {
+      const { username, email, password, firstName, lastName } = req.body;
+
+      // Validate required fields
+      if (!username || !email || !password) {
+        return res.status(400).json({ message: "Username, email, and password are required" });
+      }
+
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser) {
+        return res.status(400).json({ message: "User with this email already exists" });
+      }
+
+      const existingUsername = await storage.getUserByUsername(username);
+      if (existingUsername) {
+        return res.status(400).json({ message: "Username already taken" });
+      }
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 12);
+
+      // Create user
+      const user = await storage.createUser({
+        username,
+        email,
+        password: hashedPassword,
+        firstName: firstName || null,
+        lastName: lastName || null,
+        authProvider: "local",
+      });
+
+      // Set session
+      req.session.userId = user.id;
+      req.user = {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        profileImageUrl: user.profileImageUrl,
+      };
+
+      res.status(201).json(req.user);
+    } catch (error) {
+      console.error("Registration error:", error);
+      res.status(500).json({ message: "Failed to register user" });
+    }
+  });
+
+  // Login endpoint
+  app.post("/api/login", async (req: AuthRequest, res: Response) => {
+    try {
+      const { usernameOrEmail, password } = req.body;
+
+      if (!usernameOrEmail || !password) {
+        return res.status(400).json({ message: "Username/email and password are required" });
+      }
+
+      // Find user by username or email
+      let user = await storage.getUserByEmail(usernameOrEmail);
+      if (!user) {
+        user = await storage.getUserByUsername(usernameOrEmail);
+      }
+
+      if (!user || !user.password) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      // Check password
+      const isValid = await bcrypt.compare(password, user.password);
+      if (!isValid) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      // Set session
+      req.session.userId = user.id;
+      req.user = {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        profileImageUrl: user.profileImageUrl,
+      };
+
+      res.json(req.user);
+    } catch (error) {
+      console.error("Login error:", error);
+      res.status(500).json({ message: "Failed to login" });
+    }
+  });
+
+  // Logout endpoint
+  app.post("/api/logout", (req: AuthRequest, res: Response) => {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ message: "Failed to logout" });
+      }
+      res.clearCookie("connect.sid");
+      res.json({ message: "Logged out successfully" });
+    });
+  });
+
+  // Get current user endpoint
+  app.get("/api/auth/user", async (req: AuthRequest, res: Response) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const user = await storage.getUser(req.session.userId);
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+
+      req.user = {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        profileImageUrl: user.profileImageUrl,
+      };
+
+      res.json(req.user);
+    } catch (error) {
+      console.error("Get user error:", error);
+      res.status(500).json({ message: "Failed to get user" });
+    }
+  });
+}
+
+// Middleware to check if user is authenticated
+export const isAuthenticated = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    if (!req.session.userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const user = await storage.getUser(req.session.userId);
+    if (!user) {
+      return res.status(401).json({ message: "User not found" });
+    }
+
+    req.user = {
+      id: user.id,
+      email: user.email,
+      username: user.username,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      profileImageUrl: user.profileImageUrl,
+    };
+
+    next();
+  } catch (error) {
+    console.error("Auth middleware error:", error);
+    res.status(500).json({ message: "Authentication error" });
+  }
+};
