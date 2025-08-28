@@ -149,6 +149,48 @@ export function setupAuth(app: Express) {
     });
   });
 
+  // Google login endpoint
+  app.post("/api/auth/google", async (req: AuthRequest, res: Response) => {
+    try {
+      const { email, firstName, lastName, profileImageUrl, googleId } = req.body;
+
+      if (!email || !googleId) {
+        return res.status(400).json({ message: "Email and Google ID are required" });
+      }
+
+      // Check if user already exists
+      let user = await storage.getUserByEmail(email);
+      
+      if (!user) {
+        // Create new user from Google data
+        user = await storage.createUser({
+          email,
+          firstName: firstName || null,
+          lastName: lastName || null,
+          profileImageUrl: profileImageUrl || null,
+          authProvider: "google",
+          googleId: googleId,
+        });
+      }
+
+      // Set session
+      req.session.userId = user.id;
+      req.user = {
+        id: user.id,
+        email: user.email!,
+        username: user.username || undefined,
+        firstName: user.firstName || undefined,
+        lastName: user.lastName || undefined,
+        profileImageUrl: user.profileImageUrl || undefined,
+      };
+
+      res.json(req.user);
+    } catch (error) {
+      console.error("Google login error:", error);
+      res.status(500).json({ message: "Failed to login with Google" });
+    }
+  });
+
   // Get current user endpoint
   app.get("/api/auth/user", async (req: AuthRequest, res: Response) => {
     try {

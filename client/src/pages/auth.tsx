@@ -42,13 +42,43 @@ export default function AuthPage() {
     initFirebase();
     
     // Handle Google redirect result
-    handleGoogleRedirect().then((result) => {
+    handleGoogleRedirect().then(async (result) => {
       if (result && result.user) {
-        // TODO: Send Google user info to backend for account creation/login
-        console.log("Google user:", result.user);
+        try {
+          const googleUser = result.user;
+          const userData = {
+            email: googleUser.email,
+            firstName: googleUser.displayName?.split(' ')[0] || null,
+            lastName: googleUser.displayName?.split(' ').slice(1).join(' ') || null,
+            profileImageUrl: googleUser.photoURL,
+            googleId: googleUser.uid,
+          };
+
+          const res = await apiRequest("POST", "/api/auth/google", userData);
+          const user = await res.json();
+          
+          queryClient.setQueryData(["/api/auth/user"], user);
+          toast({
+            title: "Welcome!",
+            description: "You have successfully signed in with Google.",
+          });
+          setLocation("/");
+        } catch (error) {
+          console.error("Google login error:", error);
+          toast({
+            title: "Google Login Failed",
+            description: "Failed to complete Google sign-in. Please try again.",
+            variant: "destructive",
+          });
+        }
       }
     }).catch((error) => {
       console.error("Google redirect error:", error);
+      toast({
+        title: "Google Login Error",
+        description: "Failed to complete Google sign-in. Please try again.",
+        variant: "destructive",
+      });
     });
   }, []);
 
