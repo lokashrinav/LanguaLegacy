@@ -34,11 +34,11 @@ export default function ProgressCard({ language, progress, onBack }: ProgressCar
   const getLevelColor = (level: string) => {
     switch (level) {
       case 'beginner':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+        return 'bg-green-100 text-green-800';
       case 'intermediate':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+        return 'bg-yellow-100 text-yellow-800';
       case 'advanced':
-        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+        return 'bg-red-100 text-red-800';
       default:
         return 'bg-secondary text-secondary-foreground';
     }

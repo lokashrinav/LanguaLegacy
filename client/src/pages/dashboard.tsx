@@ -234,7 +234,7 @@ export default function Dashboard() {
                               {contribution.category?.replace('_', ' ') || 'General'}
                             </Badge>
                             {contribution.approved && (
-                              <Badge variant="default" className="text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                              <Badge variant="default" className="text-xs bg-green-100 text-green-800">
                                 Approved
                               </Badge>
                             )}

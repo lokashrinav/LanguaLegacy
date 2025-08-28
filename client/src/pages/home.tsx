@@ -181,8 +181,8 @@ export default function Home() {
                         language.threatLevel === 'critically_endangered' 
                           ? 'bg-destructive text-destructive-foreground'
                           : language.threatLevel === 'endangered'
-                          ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
-                          : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                          ? 'bg-orange-100 text-orange-800'
+                          : 'bg-yellow-100 text-yellow-800'
                       }`}>
                         {language.threatLevel?.replace('_', ' ')}
                       </span>
