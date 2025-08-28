@@ -1,0 +1,202 @@
+LanguaLegacy: Development Guide for an Endangered Languages App
+
+Impact & Context: Over a third of the world’s ~6,000 languages are at risk
+smithsonianmag.com
+ and UNESCO estimates about 40% of ~6,700 languages may disappear
+smithsonianmag.com
+. In response, the UN declared 2022–2032 the Decade of Indigenous Languages, and researchers have begun using AI to document and teach these languages
+research.ibm.com
+research.ibm.com
+. LanguaLegacy directly addresses this urgent problem by enabling communities to preserve languages: users can discover endangered languages by metadata (region, speaker count, threat level) and contribute audio and cultural context. In one example, the “Skobot” project shows how AI can engage native speakers in learning
+smithsonianmag.com
+; our app similarly uses open-source AI (speech-to-text, translation, TTS) to build language lessons. 
+smithsonianmag.com
+smithsonianmag.com
+ Image: AI-driven tools (like the Skobot robot) help preserve endangered languages. By crowd-sourcing recordings and using AI to build courses, LanguaLegacy creates social impact in line with UNESCO’s mission and IBM’s AI-for-languages efforts
+research.ibm.com
+research.ibm.com
+.
+
+Architecture & Tech Stack
+
+Frontend: A React-based web UI (using a component library or CSS framework like Tailwind/Bootstrap for cohesive design). This lets beginners use familiar JavaScript and offers reusable UI components (lists, forms, buttons) for features like language search or quizzes.
+
+Backend/API: A Python Flask (or FastAPI) server handles data and AI processing. Python is chosen because of easy integration with AI libraries (Whisper, Transformers, Coqui). The API provides endpoints for browsing/searching languages, uploading contributions, generating lessons/quizzes, and integrating with Taskade.
+
+Database: A lightweight DB (e.g. PostgreSQL on Render, or SQLite during development) stores language metadata, user contributions (audio file paths, texts, translations, comments), and generated course content. Render offers free hosted Postgres, and SQLite can be a simple starter for local tests.
+
+AI Tools & Libraries:
+
+Speech-to-Text: OpenAI’s Whisper model (open-sourced) handles transcription of uploaded audio
+openai.com
+. Whisper’s robustness to accents and noise makes it ideal for diverse languages, and it can be run locally (pip install whisper).
+
+Machine Translation: Meta’s NLLB-200 or HuggingFace MarianMT models translate between languages. NLLB is open-source and supports 200 languages directly
+cobusgreyling.medium.com
+, and it’s free to use
+cobusgreyling.medium.com
+. For example, the backend can use HuggingFace’s pipeline("translation", model="facebook/nllb-200") or pipeline("translation_en_to_fr", model="Helsinki-NLP/opus-mt-en-fr").
+
+Text-to-Speech: Coqui TTS (formerly Mozilla TTS) generates speech in the target language from text. Coqui is free to use
+coquitts.com
+ and supports many languages. We can call it via a Python library (pip install TTS) to create audio from lesson texts or quiz questions.
+
+Taskade Integration: Using Taskade’s public API (v1.0)
+help.taskade.com
+, the app can automate learning workflows. For example, after generating a course, the backend might create a Taskade workspace with tasks like “Review phrase list” or “Record 10 new audio samples”. Team members could collaborate on Taskade projects for content translation or lesson planning. Authentication would use a Taskade API token and HTTP requests from Python.
+
+Hosting: Deploy the frontend and backend on Render. We can set up two services: (1) a static site (React build) or Node.js web service for the client, and (2) a Python web service for the API. Render’s free tier supports both. We will connect our Git repo, specify build commands (npm build for React, pip install for Flask), and set environment variables for any API keys (e.g. HuggingFace token or Taskade token). A Render-managed Postgres instance can hold the database. This stack is beginner-friendly: React and Flask are well-documented and have many tutorials, and Render abstracts much of the DevOps.
+
+File Structure
+
+A clear project structure might look like:
+
+LanguaLegacy/
+├── backend/  
+│   ├── app.py                 # Flask API endpoints (e.g. /languages, /upload, /generate)
+│   ├── ai_utils.py            # Helper functions calling Whisper, translation, TTS
+│   ├── models.py              # Database models (Language, Contribution, Lesson, etc.)
+│   ├── requirements.txt       # Python dependencies (Flask, whisper, transformers, TTS, psycopg2, etc.)
+│   └── database_setup.py      # (Optional) scripts to seed initial language metadata
+├── frontend/                  
+│   ├── public/index.html      # Main HTML
+│   └── src/                  
+│       ├── App.js             # Root React component (routes to pages: Discovery, Upload, Learn)
+│       ├── components/        # Reusable UI parts (LanguageCard, AudioPlayer, Quiz, etc.)
+│       ├── services/api.js    # JavaScript functions to call backend API
+│       └── styles/            # CSS or Tailwind config for cohesive design
+├── data/                      # (Optional) static JSON files of language data (ISO codes, UNESCO threat levels)
+└── README.md                  # Project overview and setup instructions
+
+
+Using this separation, beginners can work on frontend and backend independently. For example, ai_utils.py would import the Whisper and Transformer models for transcription/translation, and frontend/src/App.js would fetch results from /api/languages or /api/quiz.
+
+Setup & Deployment Steps
+
+Clone the repo: git clone https://github.com/yourname/langua-legacy.git.
+
+Backend setup:
+
+Navigate into backend/. Create and activate a Python virtual environment.
+
+Install dependencies: pip install -r requirements.txt. This should include flask, torch (for Whisper), whisper, transformers, TTS (Coqui), psycopg2 (Postgres client), etc.
+
+Configure environment variables or a .env file (e.g. database URL, Taskade API token, HuggingFace token if required).
+
+Initialize the database: run database_setup.py or use Flask-Migrate to create tables (languages, contributions, lessons, etc.). Optionally, seed initial data (e.g. load a JSON of 2,000+ endangered languages).
+
+Frontend setup:
+
+In frontend/, run npm install (or yarn).
+
+Ensure package.json includes React and any UI libraries (e.g. Tailwind CSS).
+
+Start dev server with npm start, which will run on http://localhost:3000. It should proxy API calls to the Flask backend (set proxy in package.json or use CORS).
+
+The UI should allow browsing languages, forms to upload (posting to /api/upload), and buttons to trigger lesson generation or quizzes.
+
+Integrations:
+
+Whisper: Test transcription by calling the Whisper model in ai_utils.py on a sample audio (e.g., whisper_model = whisper.load_model('small'); then whisper_model.transcribe("audio.wav")).
+
+Translation: Test using HuggingFace: e.g., translator = pipeline("translation", model="facebook/nllb-200"); then translator("Hello", src="eng_Latn", tgt="fra_Latn").
+
+TTS: Test Coqui: e.g., using the TTS library to load a pre-trained voice and call tts.tts("Bonjour", "fr").
+
+Taskade: Obtain a personal API token from Taskade. Use Python requests.post to the Taskade API (per documentation
+help.taskade.com
+) to create a workspace or task.
+
+Deployment on Render:
+
+Push your code to a GitHub/GitLab repo.
+
+On Render, create a new Web Service: connect the repo, select the backend/ folder (or repository root) as the base, and set the build command (pip install -r backend/requirements.txt) and start command (gunicorn app:app).
+
+Create a second service for the static site: if React is used, point Render to run npm run build in frontend/ and serve the build/ folder (Render has static site support) or use a simple Node server.
+
+Configure environment variables in Render (e.g. TASKADE_API_TOKEN, DATABASE_URL).
+
+Render will automatically build and deploy. Verify the endpoints on the provided .onrender.com URL and test the full workflow.
+
+Testing: Locally, you can simulate the full flow: search languages, upload an audio+translation, see it saved in the DB, then click “Generate Course”. The app should call the AI pipeline and display lessons/quizzes. Debug any issues (e.g. CORS, file paths) before deploying.
+
+Core Features & Logic
+
+Language Discovery: Maintain a list/table of endangered languages with fields: name, ISO code, region/country, number of speakers, UNESCO threat status (vulnerable, endangered, critically endangered, extinct)
+research.ibm.com
+. This could be loaded from UNESCO’s Atlas data or a CSV. The frontend provides a search bar and filters (e.g. by continent or threat level). Clicking a language shows its metadata and any contributed materials.
+
+User Contributions: Users can contribute new data to a language. The UI form might let a user upload an audio file (e.g. a spoken phrase or word), enter the transcription and translation, and add cultural notes/context. The backend saves the file (to disk or cloud storage) and records a Contribution entry in the DB with references to the language. These contributions expand the corpus for that language. (Long-term, moderation or peer review can be added, but out of scope for v1.)
+
+Course Generation (AI-driven): When enough material is collected for a language, the user can click “Generate Lesson”. The backend compiles available phrases and translations, then calls an AI to structure a lesson. For example, it might send a prompt to an LLM like OpenAI’s GPT-3.5 (if free credits allow) or a HuggingFace model: “Given these [LANGUAGE] phrases and English translations, create a simple beginner lesson with five phrases, example dialogues, and short quizzes.” This results in content like “Lesson 1: Greetings – [phrase1] means …” etc. These lesson plans are saved and displayed on the frontend. As IBM noted, LLMs can effectively document and teach languages even with limited data
+research.ibm.com
+. If LLMs are impractical, a simpler algorithm can assemble lessons from common phrases.
+
+Speech-to-Text (Whisper): Whenever an audio file is uploaded, the backend runs Whisper to auto-transcribe it. This transcription can be used to verify user input or fill in missing text. For example, a user may upload an interview clip; Whisper produces the text so the user can then confirm or edit the transcription. This turns raw recordings into usable text data for lessons. Whisper’s open-source model is robust to diverse languages and accented speech
+openai.com
+.
+
+Machine Translation: LanguaLegacy uses translation tools for two purposes: (1) to help users understand and verify content, and (2) to generate quiz distractors. Using NLLB-200 or MarianMT, the app can translate user-entered phrases or quiz content between the target language and a common language (e.g. English). Because NLLB supports 200 languages directly
+cobusgreyling.medium.com
+ and is free to use
+cobusgreyling.medium.com
+, we can translate without intermediate pivot languages. This enriches quiz generation (e.g. “What does this [language] sentence mean?” options include one correct English translation and random wrong ones).
+
+Text-to-Speech (Coqui TTS): To build listening exercises, the app converts lesson text into speech. Coqui TTS can synthesize spoken phrases in several languages
+coquitts.com
+. For example, a quiz might play an audio clip (generated by Coqui) and ask the learner to type the phrase they heard or select its meaning. Using Coqui ensures natural-sounding audio and is free/open-source.
+
+Dynamic Quizzes & Games: From the collected data, LanguaLegacy automatically generates practice activities. Examples include multiple-choice quizzes (matching phrases to meanings), pronunciation checks (user records their voice saying a phrase; Whisper compares it to the original), and listening exercises (audio clips from Coqui or user audio are played). The core logic randomly selects items from the language’s data pool, shuffles options, and provides immediate feedback. These features turn static content into interactive learning, leveraging the collected data for engagement.
+
+Taskade Integration: After creating content, LanguaLegacy can programmatically create a Taskade project to involve collaborators. For instance, generating a course could trigger a POST to Taskade’s API to create a workspace named “X Language Lesson 1” with checklist tasks: “Translate [5 words]”, “Add 3 audio samples”, “Peer-review quiz questions”. Team members use Taskade (via web or app) to coordinate who will upload more data or review content. This meets the hackathon’s emphasis on Taskade: we harness its API
+help.taskade.com
+ to manage collaborative language preservation workflows.
+
+Presentation Tips
+
+Story & Impact: Begin your demo by stating the problem clearly: cite statistics like “~40% of the world’s ~7,000 languages are endangered”
+research.ibm.com
+smithsonianmag.com
+ to emphasize impact. Show how LanguaLegacy addresses this societal need.
+
+Live Demo: Demonstrate key features step-by-step: (a) Search/browse an endangered language; (b) Upload a sample audio phrase with translation; (c) Run the AI course generator and display the resulting lesson; (d) Show a generated quiz or pronunciation game working. Use real or mock data for authenticity. Keep the UI clean: choose a harmonious color scheme and readable fonts (the rubric calls for cohesive design
+bay-2-bay-hacks.devpost.com
+).
+
+Visual Aids: Prepare slides/screenshots highlighting architecture (stack, file structure) and how AI tools fit together. Use diagrams (e.g., “User → Frontend → API → AI Models/DB”) to explain data flow. Emphasize integrations (Taskade icon connecting to our app, etc.).
+
+Rehearse Metrics: When pitching, explicitly link features to rubric points: “Our app’s societal impact is clear given UNESCO’s concerns
+research.ibm.com
+; it innovatively uses Whisper, NLLB, and Coqui to teach languages; the UI is designed for clarity; and our presentation will show a polished demo.”
+
+Engagement: Keep videos short (1–2 minutes) and clear. For any code or console demo, zoom in so text is legible. If possible, show a quick screen recording of using the app (searching a language, generating content). Practicing transitions and anticipating questions will improve presentation quality.
+
+Alignment with Judging Criteria
+
+We followed the Bay2BayHacks rubric
+bay-2-bay-hacks.devpost.com
+ to ensure a strong submission. Impact: LanguaLegacy tackles a well-defined societal problem (language loss) using AI for education and cultural preservation
+research.ibm.com
+research.ibm.com
+. By enabling community contributions and personalized courses, it has clear social benefit. Innovation: Combining speech-to-text, translation, and TTS (all open-source) for endangered languages is a fresh approach, especially with Team workflows via Taskade
+help.taskade.com
+. This synergy of tools is novel in the language-preservation space. App Sophistication: The app integrates multiple AI models (Whisper, NLLB/MarianMT, Coqui) and a database, with a modular frontend-backend architecture. Its features (searchable language database, AI-generated lessons/quizzes, collaborative Taskade integration) constitute a rich, cohesive application
+openai.com
+cobusgreyling.medium.com
+. Visual Appeal: We recommend using a clean, intuitive UI layout with consistent styling and maybe illustrative graphics (maps or language icons) to meet the “visually stunning” criterion
+bay-2-bay-hacks.devpost.com
+. Presentation Quality: Our guide suggests preparing clear slides and demo video, emphasizing problem, solution, and results. We will focus on polished visuals and narrative flow to engage judges. In summary, every judging category is addressed: societal impact through language preservation, creative use of AI, technical completeness with multiple APIs/models, and attention to design and presentation polish
+bay-2-bay-hacks.devpost.com
+.
+
+Sources: The plan builds on examples and research about AI for endangered languages
+research.ibm.com
+smithsonianmag.com
+ and uses free, open AI technologies
+openai.com
+cobusgreyling.medium.com
+coquitts.com
+. Taskade’s own documentation
+help.taskade.com
+ guided the integration approach. All features are grounded in current tools and best practices, as required by the hackathon.
