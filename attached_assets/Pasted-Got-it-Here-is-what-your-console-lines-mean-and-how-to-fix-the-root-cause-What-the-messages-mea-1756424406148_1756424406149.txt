@@ -1,0 +1,104 @@
+Got it. Here is what your console lines mean and how to fix the root cause.
+
+What the messages mean
+
+1. Failed to load resource 401 Unauthorized
+   Your app called an endpoint that requires proof of login. The server did not accept what it received. This is the core problem.
+
+2. POST [https://play.google.com/log](https://play.google.com/log) … ERR\_BLOCKED\_BY\_CLIENT
+   An ad blocker stopped a Google logging request. Safe to ignore.
+
+3. WARNING about Self XSS
+   A standard Chrome warning on Google pages. Safe to ignore.
+
+Why you are getting 401 in a Google sign in flow
+In this flow the browser must send one of two things that the server trusts.
+Option A. A Firebase ID token in the request body. The server verifies it, then creates a session.
+Option B. A session cookie that was already set by your server after a previous login.
+
+Your 401 means the server got neither a valid ID token nor a valid session cookie.
+
+Most common causes and quick checks
+
+1. The client did not send the Firebase ID token
+   Check your code right after Firebase sign in.
+
+```ts
+const idToken = await auth.currentUser?.getIdToken();
+await fetch("/api/auth/google", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ idToken }),
+  credentials: "include",
+});
+```
+
+If body does not contain idToken, the server will return 401.
+
+2. The server does not verify the ID token
+   Your server route must verify with Firebase Admin before creating a session.
+
+```ts
+import { getAuth } from "firebase-admin/auth";
+
+app.post("/api/auth/google", async (req, res) => {
+  const { idToken } = req.body || {};
+  if (!idToken) return res.status(400).json({ error: "Missing token" });
+
+  const decoded = await getAuth().verifyIdToken(idToken); // throws on bad token
+  // find or create user in DB by decoded.uid or decoded.email
+  // then set session
+  req.session.userId = user.id;
+  return res.status(204).end();
+});
+```
+
+If you are sending profile fields instead of idToken, switch to the code above.
+
+3. Cookie not set because of cookie options
+   If your server sets a session cookie but you are on http during local dev and cookie.secure is true, the browser will drop the cookie. Next request will be seen as not logged in and you get 401.
+   In local dev use secure false. In production use secure true.
+
+```ts
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production", // false in dev if using http
+  },
+  store: yourSessionStore,
+}));
+```
+
+4. Missing credentials on fetch
+   If you forget credentials include the browser will not send or accept cookies from the server.
+
+```ts
+await fetch("/api/auth/google", { ..., credentials: "include" });
+```
+
+5. Cross site cookie blocked
+   If your app runs on one domain and the api runs on another, the cookie can be blocked by SameSite rules or by CORS.
+   Fix CORS on the server and keep SameSite as lax for typical flows.
+
+```ts
+import cors from "cors";
+app.use(cors({
+  origin: "http://localhost:3000", // your web app origin
+  credentials: true,
+}));
+```
+
+6. Expired or invalid ID token
+   ID tokens are short lived. If you store one and reuse it later, verifyIdToken will fail. Always call getIdToken just before the request. If needed call getIdToken true to force refresh.
+
+How to pinpoint in one minute
+Open DevTools Network tab. Click the failing request to your api.
+Request tab. Confirm Content Type is application json. Confirm a request body with idToken exists. Confirm cookies are sent when you expect a session.
+Response tab. Read the server error text if any.
+Application tab then Cookies. Check if your session cookie exists after the login call.
+
+If you paste the request and response details for the failing call to your api route I can map the exact failing point.

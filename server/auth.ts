@@ -154,20 +154,27 @@ export function setupAuth(app: Express) {
   // Google login endpoint
   app.post("/api/auth/google", async (req: AuthRequest, res: Response) => {
     try {
+      console.log("=== Google login attempt ===");
+      console.log("Request body:", req.body);
       const { idToken } = req.body;
       if (!idToken) {
+        console.log("Missing idToken in request body");
         return res.status(400).json({ error: "Missing token" });
       }
 
       // Verify the Firebase ID token
+      console.log("Attempting to verify ID token...");
       const admin = await import("firebase-admin");
       if (!admin.apps.length) {
+        console.log("Initializing Firebase Admin...");
         admin.initializeApp({
           credential: admin.credential.applicationDefault(),
         });
       }
 
+      console.log("Verifying token with Firebase Admin...");
       const decoded = await admin.auth().verifyIdToken(idToken);
+      console.log("Token verified. User info:", { uid: decoded.uid, email: decoded.email });
       const email = decoded.email;
       
       if (!email || !decoded.email_verified) {
