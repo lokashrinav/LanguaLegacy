@@ -13,9 +13,19 @@ let app: any = null;
 let auth: any = null;
 
 export function initFirebase() {
+  console.log("Firebase config:", { 
+    hasApiKey: !!firebaseConfig.apiKey,
+    hasAppId: !!firebaseConfig.appId, 
+    hasProjectId: !!firebaseConfig.projectId,
+    authDomain: firebaseConfig.authDomain
+  });
+  
   if (firebaseConfig.apiKey && firebaseConfig.appId && firebaseConfig.projectId) {
     app = initializeApp(firebaseConfig);
     auth = getAuth(app);
+    console.log("Firebase initialized successfully");
+  } else {
+    console.error("Firebase config missing required fields");
   }
 }
 
@@ -25,6 +35,7 @@ export function googleLogin() {
     return;
   }
   
+  console.log("Starting Google sign-in with redirect...");
   const provider = new GoogleAuthProvider();
   signInWithRedirect(auth, provider);
 }
@@ -35,7 +46,15 @@ export function handleGoogleRedirect() {
     return Promise.resolve(null);
   }
   
-  return getRedirectResult(auth);
+  console.log("Checking for Google redirect result...");
+  return getRedirectResult(auth).then(result => {
+    if (result) {
+      console.log("Google redirect result:", { user: !!result.user, email: result.user?.email });
+    } else {
+      console.log("No redirect result found");
+    }
+    return result;
+  });
 }
 
 export { auth };
