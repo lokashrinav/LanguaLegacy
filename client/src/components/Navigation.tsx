@@ -54,7 +54,7 @@ export default function Navigation({ showAuthButton = false }: NavigationProps) 
   };
 
   return (
-    <nav className="border-b border-border sticky top-0 z-50" style={{ backgroundColor: 'hsl(30 50% 75%)' }} data-testid="navigation">
+    <nav className="border-b border-border sticky top-0 z-50" style={{ backgroundColor: 'hsl(45 35% 93%)' }} data-testid="navigation">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
