@@ -23,13 +23,24 @@ export default function Navigation({ showAuthButton = false }: NavigationProps) 
     window.location.href = "/api/logout";
   };
 
-  const navItems = isAuthenticated ? [
-    { href: "/", label: "Home", icon: "fas fa-home" },
+  const navItems = [
     { href: "/discover", label: "Discover", icon: "fas fa-search" },
     { href: "/learn", label: "Learn", icon: "fas fa-graduation-cap" },
     { href: "/contribute", label: "Contribute", icon: "fas fa-microphone" },
+  ];
+
+  const authenticatedNavItems = [
+    { href: "/", label: "Home", icon: "fas fa-home" },
+    ...navItems,
     { href: "/dashboard", label: "Dashboard", icon: "fas fa-chart-line" },
-  ] : [];
+  ];
+
+  const handleNavClick = (href: string, e: React.MouseEvent) => {
+    if (!isAuthenticated) {
+      e.preventDefault();
+      handleLogin();
+    }
+  };
 
   const isActive = (path: string) => {
     if (path === "/" && location === "/") return true;
@@ -48,22 +59,21 @@ export default function Navigation({ showAuthButton = false }: NavigationProps) 
           </Link>
           
           {/* Desktop Navigation */}
-          {isAuthenticated && (
-            <div className="hidden md:flex items-center space-x-8">
-              {navItems.map((item) => (
-                <Link key={item.href} to={item.href}>
-                  <span 
-                    className={`nav-link text-foreground hover:text-primary ${
-                      isActive(item.href) ? 'active' : ''
-                    }`}
-                    data-testid={`nav-${item.label.toLowerCase()}`}
-                  >
-                    {item.label}
-                  </span>
-                </Link>
-              ))}
-            </div>
-          )}
+          <div className="hidden md:flex items-center space-x-8">
+            {(isAuthenticated ? authenticatedNavItems : navItems).map((item) => (
+              <Link key={item.href} to={item.href}>
+                <span 
+                  className={`nav-link text-foreground hover:text-primary cursor-pointer ${
+                    isActive(item.href) ? 'active' : ''
+                  }`}
+                  onClick={(e) => handleNavClick(item.href, e)}
+                  data-testid={`nav-${item.label.toLowerCase()}`}
+                >
+                  {item.label}
+                </span>
+              </Link>
+            ))}
+          </div>
           
           {/* User Menu / Auth Button */}
           <div className="flex items-center space-x-4">
@@ -114,29 +124,32 @@ export default function Navigation({ showAuthButton = false }: NavigationProps) 
             ) : null}
             
             {/* Mobile Menu Button */}
-            {isAuthenticated && (
-              <div className="md:hidden">
-                <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-                  <SheetTrigger asChild>
-                    <Button variant="ghost" size="sm" data-testid="mobile-menu-trigger">
-                      <i className="fas fa-bars text-xl"></i>
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent side="right" className="w-[300px] sm:w-[400px]">
-                    <div className="flex flex-col space-y-4 mt-6">
-                      {navItems.map((item) => (
-                        <Link key={item.href} to={item.href}>
-                          <Button 
-                            variant="ghost" 
-                            className="w-full justify-start"
-                            onClick={() => setMobileMenuOpen(false)}
-                            data-testid={`mobile-nav-${item.label.toLowerCase()}`}
-                          >
-                            <i className={`${item.icon} mr-3`}></i>
-                            {item.label}
-                          </Button>
-                        </Link>
-                      ))}
+            <div className="md:hidden">
+              <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="sm" data-testid="mobile-menu-trigger">
+                    <i className="fas fa-bars text-xl"></i>
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+                  <div className="flex flex-col space-y-4 mt-6">
+                    {(isAuthenticated ? authenticatedNavItems : navItems).map((item) => (
+                      <Link key={item.href} to={item.href}>
+                        <Button 
+                          variant="ghost" 
+                          className="w-full justify-start"
+                          onClick={(e) => {
+                            setMobileMenuOpen(false);
+                            handleNavClick(item.href, e);
+                          }}
+                          data-testid={`mobile-nav-${item.label.toLowerCase()}`}
+                        >
+                          <i className={`${item.icon} mr-3`}></i>
+                          {item.label}
+                        </Button>
+                      </Link>
+                    ))}
+                    {isAuthenticated && (
                       <Button 
                         variant="ghost" 
                         className="w-full justify-start text-destructive"
@@ -146,11 +159,22 @@ export default function Navigation({ showAuthButton = false }: NavigationProps) 
                         <i className="fas fa-sign-out-alt mr-3"></i>
                         Logout
                       </Button>
-                    </div>
-                  </SheetContent>
-                </Sheet>
-              </div>
-            )}
+                    )}
+                    {!isAuthenticated && (
+                      <Button 
+                        variant="default" 
+                        className="w-full justify-start"
+                        onClick={handleLogin}
+                        data-testid="mobile-login"
+                      >
+                        <i className="fas fa-sign-in-alt mr-3"></i>
+                        Sign In / Sign Up
+                      </Button>
+                    )}
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
           </div>
         </div>
       </div>
