@@ -70,7 +70,7 @@ export default function ProgressCard({ language, progress, onBack }: ProgressCar
           <div className="w-20 h-20 bg-primary rounded-full flex items-center justify-center mx-auto mb-3">
             <i className="fas fa-user text-2xl text-primary-foreground"></i>
           </div>
-          <CardTitle className="text-lg" data-testid="learning-language-name">
+          <CardTitle className="text-lg" data-testid="learning-language-name" style={{color: 'var(--text-black)'}}>
             Learning {language?.name || 'Language'}
           </CardTitle>
           {progress && (
@@ -85,7 +85,7 @@ export default function ProgressCard({ language, progress, onBack }: ProgressCar
         {progress && (
           <div className="mb-6">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium text-foreground">Progress</span>
+              <span className="text-sm font-medium" style={{color: 'var(--text-black)'}}>Progress</span>
               <span className="text-sm text-muted-foreground" data-testid="progress-text">
                 {progress.lessonsCompleted}/{progress.totalLessons} lessons
               </span>
@@ -98,7 +98,7 @@ export default function ProgressCard({ language, progress, onBack }: ProgressCar
         )}
         
         <div className="space-y-3 mb-6">
-          <h4 className="font-medium text-foreground">Recent Lessons</h4>
+          <h4 className="font-medium" style={{color: 'var(--text-black)'}}>Recent Lessons</h4>
           {mockLessons.map((lesson) => (
             <div 
               key={lesson.id}

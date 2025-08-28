@@ -40,6 +40,9 @@
   --sidebar-accent-foreground: hsl(35 40% 96%);
   --sidebar-border: hsl(35 25% 85%);
   --sidebar-ring: hsl(25 60% 35%);
+  --text-black: hsl(0 0% 0%);
+  --heading-black: hsl(0 0% 15%);
+  --nav-black: hsl(0 0% 10%);
   --font-sans: 'Inter', sans-serif;
   --font-serif: Georgia, serif;
   --font-mono: Menlo, monospace;

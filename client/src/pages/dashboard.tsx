@@ -64,7 +64,7 @@ export default function Dashboard() {
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Your Dashboard</h1>
+          <h1 className="text-3xl md:text-4xl font-bold mb-4" style={{color: 'var(--heading-black)'}}>Your Dashboard</h1>
           <p className="text-lg text-muted-foreground">
             Track your learning progress and contributions to language preservation.
           </p>
@@ -84,7 +84,7 @@ export default function Dashboard() {
                       <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
                         <i className="fas fa-microphone text-primary text-sm"></i>
                       </div>
-                      <span className="text-sm text-foreground">Audio Contributions</span>
+                      <span className="text-sm" style={{color: 'var(--text-black)'}}>Audio Contributions</span>
                     </div>
                     <span className="font-semibold text-primary" data-testid="stat-audio-contributions">
                       {contributionStatsLoading ? '...' : contributionStats?.audioContributions || 0}
@@ -96,7 +96,7 @@ export default function Dashboard() {
                       <div className="w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center">
                         <i className="fas fa-language text-accent text-sm"></i>
                       </div>
-                      <span className="text-sm text-foreground">Translations</span>
+                      <span className="text-sm" style={{color: 'var(--text-black)'}}>Translations</span>
                     </div>
                     <span className="font-semibold text-accent" data-testid="stat-translations">
                       {contributionStatsLoading ? '...' : contributionStats?.translations || 0}
@@ -108,7 +108,7 @@ export default function Dashboard() {
                       <div className="w-8 h-8 bg-secondary/50 rounded-full flex items-center justify-center">
                         <i className="fas fa-graduation-cap text-foreground text-sm"></i>
                       </div>
-                      <span className="text-sm text-foreground">Lessons Completed</span>
+                      <span className="text-sm" style={{color: 'var(--text-black)'}}>Lessons Completed</span>
                     </div>
                     <span className="font-semibold text-foreground" data-testid="stat-lessons-completed">
                       {statsLoading ? '...' : userStats?.lessonsCompleted || 0}
@@ -120,7 +120,7 @@ export default function Dashboard() {
                       <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
                         <i className="fas fa-fire text-primary text-sm"></i>
                       </div>
-                      <span className="text-sm text-foreground">Current Streak</span>
+                      <span className="text-sm" style={{color: 'var(--text-black)'}}>Current Streak</span>
                     </div>
                     <span className="font-semibold text-primary" data-testid="stat-current-streak">
                       {statsLoading ? '...' : userStats?.currentStreak || 0} days
@@ -212,7 +212,7 @@ export default function Dashboard() {
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center justify-between mb-1">
-                            <h4 className="font-medium text-foreground">
+                            <h4 className="font-medium" style={{color: 'var(--text-black)'}}>
                               {contribution.type === 'audio' ? 'Added audio recording' :
                                contribution.type === 'text' ? 'Added translation' :
                                'Added cultural context'}
@@ -285,13 +285,13 @@ export default function Dashboard() {
                   {learningProgress.map((progress: any) => (
                     <div key={progress.id} className="p-4 bg-background rounded-lg border border-border" data-testid={`progress-${progress.languageId}`}>
                       <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-medium text-foreground">Language Progress</h4>
+                        <h4 className="font-medium" style={{color: 'var(--text-black)'}}>Language Progress</h4>
                         <Badge variant="secondary">{progress.currentLevel}</Badge>
                       </div>
                       <div className="mb-3">
                         <div className="flex justify-between text-sm mb-1">
                           <span className="text-muted-foreground">Lessons</span>
-                          <span className="font-medium">{progress.lessonsCompleted}/{progress.totalLessons}</span>
+                          <span className="font-medium" style={{color: 'var(--text-black)'}}>{progress.lessonsCompleted}/{progress.totalLessons}</span>
                         </div>
                         <div className="w-full bg-muted rounded-full h-2">
                           <div 
