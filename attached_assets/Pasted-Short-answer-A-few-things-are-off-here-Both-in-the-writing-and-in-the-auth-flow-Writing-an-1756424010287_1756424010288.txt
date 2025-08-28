@@ -1,0 +1,118 @@
+Short answer. A few things are off here. Both in the writing and in the auth flow.
+
+### Writing and process issues
+
+1. You claim actions you did not actually do. Example. Executed npm run db\:push. That reads like you ran commands on their machine.
+2. You ask them to try things and report back. That puts work on the user and sounds like live debugging.
+3. Repetition and filler. You say Opened server/storage.ts twice. You say Perfect many times. It reads like a log, not a clear plan.
+4. You promise to watch server logs. You cannot do that from here.
+5. You name possible Drizzle errors but never show one. That is vague.
+
+### Technical issues in the described flow
+
+1. You say You send Google data to our backend. You should not send raw profile data from the browser to the server and trust it. You should send the Firebase ID token. The server must verify that token.
+2. Session setup is underspecified. You say req.session.userId = user.id. You need a real session store and secure cookies. HttpOnly. SameSite. Secure in production.
+3. You mix Firebase sessions in the browser with your own server session. That can drift. Pick one source of truth. If you need a server session, create it only after verifying the Firebase ID token.
+4. You mention Drizzle syntax errors. The plan does not show any schema or query that would fail. Without the exact error, you cannot claim the root cause.
+5. The client step handleGoogleRedirect is only one option. Many apps now use the popup flow. Either is fine, but make sure the code matches the chosen Firebase method.
+
+### A clean and correct flow
+
+1. Browser signs in with Firebase using Google.
+2. Browser calls user.getIdToken. This is the Firebase ID token.
+3. Browser sends that token to POST /api/auth/google in JSON. Only the token.
+4. Server verifies the ID token with Firebase Admin SDK or Google auth libs. Get uid, email, email\_verified, name, picture.
+5. Server finds or creates the user in the database by uid or by email if you map uids to emails.
+6. Server creates a session in your store. Set a secure cookie. HttpOnly. SameSite Lax or Strict. Secure true in production.
+7. Server returns a small user object to the client. Or just 204 and let the client fetch /api/me.
+8. Client treats server as source of truth for login state. For example call /api/me and then route to the dashboard.
+
+### Minimal code sketch
+
+Client
+
+```ts
+// after Firebase sign in
+const idToken = await auth.currentUser?.getIdToken();
+await fetch("/api/auth/google", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ idToken }),
+  credentials: "include", // allow cookie from server
+});
+```
+
+Server
+
+```ts
+// verify token
+import { getAuth } from "firebase-admin/auth";
+
+app.post("/api/auth/google", async (req, res) => {
+  const { idToken } = req.body;
+  if (!idToken) return res.status(400).json({ error: "Missing token" });
+
+  const decoded = await getAuth().verifyIdToken(idToken);
+  const email = decoded.email;
+  if (!email || !decoded.email_verified) {
+    return res.status(401).json({ error: "Email not verified" });
+  }
+
+  // find or create user
+  let user = await storage.getUserByEmail(email);
+  if (!user) {
+    user = await storage.createUser({
+      email,
+      name: decoded.name ?? "",
+      avatarUrl: decoded.picture ?? "",
+      providerUid: decoded.uid,
+      provider: "google",
+    });
+  }
+
+  // set session
+  req.session.userId = user.id;
+  res.status(204).end();
+});
+```
+
+Cookie settings
+
+```ts
+app.use(session({
+  secret: process.env.SESSION_SECRET!,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+  },
+  store: yourSessionStore,
+}));
+```
+
+Drizzle note
+
+```ts
+// Make sure email has a unique index
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
+  email: varchar("email", { length: 255 }).notNull(),
+  name: varchar("name", { length: 255 }).notNull().default(""),
+  avatarUrl: text("avatar_url"),
+  provider: varchar("provider", { length: 32 }).notNull(),
+  providerUid: varchar("provider_uid", { length: 255 }).notNull(),
+}, (t) => ({
+  emailIdx: uniqueIndex("users_email_idx").on(t.email),
+}));
+```
+
+### How to fix your message
+
+1. Remove claims of actions you cannot perform.
+2. Replace vague lines with exact next steps.
+3. Ask for one concrete artifact if needed, for example a single error stack or a single network trace.
+4. State the final target. Browser sends ID token, server verifies, server sets cookie, dashboard loads.
+
+If you want, paste the exact Drizzle error and the server route for POST /api/auth/google. I can pinpoint the bug line by line.

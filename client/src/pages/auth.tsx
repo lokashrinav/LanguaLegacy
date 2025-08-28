@@ -45,27 +45,17 @@ export default function AuthPage() {
     handleGoogleRedirect().then(async (result) => {
       if (result && result.user) {
         try {
-          const googleUser = result.user;
-          const userData = {
-            email: googleUser.email,
-            firstName: googleUser.displayName?.split(' ')[0] || null,
-            lastName: googleUser.displayName?.split(' ').slice(1).join(' ') || null,
-            profileImageUrl: googleUser.photoURL,
-            googleId: googleUser.uid,
-          };
-
-          console.log("Sending Google user data:", userData);
-          const res = await apiRequest("POST", "/api/auth/google", userData);
-          console.log("Google auth response status:", res.status);
-          const user = await res.json();
-          console.log("Google auth response data:", user);
+          const idToken = await result.user.getIdToken();
+          const res = await apiRequest("POST", "/api/auth/google", { idToken });
           
-          queryClient.setQueryData(["/api/auth/user"], user);
-          toast({
-            title: "Welcome!",
-            description: "You have successfully signed in with Google.",
-          });
-          setLocation("/");
+          if (res.ok) {
+            queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+            toast({
+              title: "Welcome!",
+              description: "You have successfully signed in with Google.",
+            });
+            setLocation("/");
+          }
         } catch (error) {
           console.error("Google login error:", error);
           toast({

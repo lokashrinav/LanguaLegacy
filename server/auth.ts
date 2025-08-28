@@ -36,7 +36,9 @@ export function setupAuth(app: Express) {
     saveUninitialized: false,
     store: sessionStore,
     cookie: {
-      secure: false, // Set to true in production with HTTPS
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
       maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
     },
   };
@@ -152,44 +154,45 @@ export function setupAuth(app: Express) {
   // Google login endpoint
   app.post("/api/auth/google", async (req: AuthRequest, res: Response) => {
     try {
-      console.log("Google login request body:", req.body);
-      const { email, firstName, lastName, profileImageUrl, googleId } = req.body;
-
-      if (!email || !googleId) {
-        console.log("Missing email or googleId:", { email, googleId });
-        return res.status(400).json({ message: "Email and Google ID are required" });
+      const { idToken } = req.body;
+      if (!idToken) {
+        return res.status(400).json({ error: "Missing token" });
       }
 
-      // Check if user already exists
-      let user = await storage.getUserByEmail(email);
+      // Verify the Firebase ID token
+      const admin = await import("firebase-admin");
+      if (!admin.apps.length) {
+        admin.initializeApp({
+          credential: admin.credential.applicationDefault(),
+        });
+      }
+
+      const decoded = await admin.auth().verifyIdToken(idToken);
+      const email = decoded.email;
       
+      if (!email || !decoded.email_verified) {
+        return res.status(401).json({ error: "Email not verified" });
+      }
+
+      // Find or create user
+      let user = await storage.getUserByEmail(email);
       if (!user) {
-        // Create new user from Google data
         user = await storage.createUser({
           email,
-          firstName: firstName || null,
-          lastName: lastName || null,
-          profileImageUrl: profileImageUrl || null,
+          firstName: decoded.name?.split(' ')[0] || null,
+          lastName: decoded.name?.split(' ').slice(1).join(' ') || null,
+          profileImageUrl: decoded.picture || null,
           authProvider: "google",
-          googleId: googleId,
+          googleId: decoded.uid,
         });
       }
 
       // Set session
       req.session.userId = user.id;
-      req.user = {
-        id: user.id,
-        email: user.email!,
-        username: user.username || undefined,
-        firstName: user.firstName || undefined,
-        lastName: user.lastName || undefined,
-        profileImageUrl: user.profileImageUrl || undefined,
-      };
-
-      res.json(req.user);
+      res.status(204).end();
     } catch (error) {
       console.error("Google login error:", error);
-      res.status(500).json({ message: "Failed to login with Google" });
+      res.status(500).json({ error: "Failed to login with Google" });
     }
   });
 
