@@ -109,8 +109,6 @@ export class DatabaseStorage implements IStorage {
     limit?: number;
     offset?: number;
   }): Promise<Language[]> {
-    let query = db.select().from(languages);
-
     const conditions = [];
     if (params?.search) {
       conditions.push(ilike(languages.name, `%${params.search}%`));
@@ -122,11 +120,11 @@ export class DatabaseStorage implements IStorage {
       conditions.push(eq(languages.threatLevel, params.threatLevel));
     }
 
+    let query = db.select().from(languages).orderBy(asc(languages.name));
+
     if (conditions.length > 0) {
       query = query.where(and(...conditions));
     }
-
-    query = query.orderBy(asc(languages.name));
 
     if (params?.limit) {
       query = query.limit(params.limit);
@@ -157,8 +155,6 @@ export class DatabaseStorage implements IStorage {
     limit?: number;
     offset?: number;
   }): Promise<Contribution[]> {
-    let query = db.select().from(contributions);
-
     const conditions = [];
     if (params?.userId) {
       conditions.push(eq(contributions.userId, params.userId));
@@ -173,11 +169,11 @@ export class DatabaseStorage implements IStorage {
       conditions.push(eq(contributions.approved, params.approved));
     }
 
+    let query = db.select().from(contributions).orderBy(desc(contributions.createdAt));
+
     if (conditions.length > 0) {
       query = query.where(and(...conditions));
     }
-
-    query = query.orderBy(desc(contributions.createdAt));
 
     if (params?.limit) {
       query = query.limit(params.limit);
