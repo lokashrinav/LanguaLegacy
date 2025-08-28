@@ -153,11 +153,15 @@ export default function AuthPage() {
   };
 
   const handleGoogleLogin = () => {
+    console.log("=== Google login button clicked ===");
     const hasFirebaseConfig = import.meta.env.VITE_FIREBASE_API_KEY && 
                              import.meta.env.VITE_FIREBASE_APP_ID && 
                              import.meta.env.VITE_FIREBASE_PROJECT_ID;
 
+    console.log("Firebase config check:", hasFirebaseConfig);
+
     if (!hasFirebaseConfig) {
+      console.log("Firebase config missing, showing toast");
       toast({
         title: "Google Login Not Available",
         description: "Please configure Firebase credentials to enable Google login.",
@@ -167,8 +171,10 @@ export default function AuthPage() {
     }
 
     try {
+      console.log("Calling googleLogin()...");
       googleLogin();
     } catch (error) {
+      console.error("Error in handleGoogleLogin:", error);
       toast({
         title: "Google Login Error",
         description: "Failed to initiate Google login. Please try again.",
