@@ -81,11 +81,11 @@ export function setupAuth(app: Express) {
       req.session.userId = user.id;
       req.user = {
         id: user.id,
-        email: user.email,
-        username: user.username,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        profileImageUrl: user.profileImageUrl,
+        email: user.email!,
+        username: user.username || undefined,
+        firstName: user.firstName || undefined,
+        lastName: user.lastName || undefined,
+        profileImageUrl: user.profileImageUrl || undefined,
       };
 
       res.status(201).json(req.user);
@@ -124,11 +124,11 @@ export function setupAuth(app: Express) {
       req.session.userId = user.id;
       req.user = {
         id: user.id,
-        email: user.email,
-        username: user.username,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        profileImageUrl: user.profileImageUrl,
+        email: user.email!,
+        username: user.username || undefined,
+        firstName: user.firstName || undefined,
+        lastName: user.lastName || undefined,
+        profileImageUrl: user.profileImageUrl || undefined,
       };
 
       res.json(req.user);
@@ -163,11 +163,11 @@ export function setupAuth(app: Express) {
 
       req.user = {
         id: user.id,
-        email: user.email,
-        username: user.username,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        profileImageUrl: user.profileImageUrl,
+        email: user.email!,
+        username: user.username || undefined,
+        firstName: user.firstName || undefined,
+        lastName: user.lastName || undefined,
+        profileImageUrl: user.profileImageUrl || undefined,
       };
 
       res.json(req.user);
@@ -192,11 +192,11 @@ export const isAuthenticated = async (req: AuthRequest, res: Response, next: Nex
 
     req.user = {
       id: user.id,
-      email: user.email,
-      username: user.username,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      profileImageUrl: user.profileImageUrl,
+      email: user.email!,
+      username: user.username || undefined,
+      firstName: user.firstName || undefined,
+      lastName: user.lastName || undefined,
+      profileImageUrl: user.profileImageUrl || undefined,
     };
 
     next();
