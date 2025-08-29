@@ -8,6 +8,11 @@ import {
   insertLearningProgressSchema,
   insertLessonSchema,
   insertUserLessonCompletionSchema,
+  insertStudyGroupSchema,
+  insertGroupMemberSchema,
+  insertGroupTaskSchema,
+  insertTaskProgressSchema,
+  insertLearningGoalSchema,
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -442,6 +447,250 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching contribution stats:", error);
       res.status(500).json({ message: "Failed to fetch contribution stats" });
+    }
+  });
+
+  // Study Group routes
+  app.get('/api/study-groups', async (req, res) => {
+    try {
+      const { userId, languageId, isPublic, limit = '20', offset = '0' } = req.query;
+      
+      const groups = await storage.getStudyGroups({
+        userId: userId as string,
+        languageId: languageId as string,
+        isPublic: isPublic === 'true',
+        limit: parseInt(limit as string),
+        offset: parseInt(offset as string),
+      });
+
+      res.json(groups);
+    } catch (error) {
+      console.error("Error fetching study groups:", error);
+      res.status(500).json({ message: "Failed to fetch study groups" });
+    }
+  });
+
+  app.get('/api/study-groups/:id', async (req, res) => {
+    try {
+      const group = await storage.getStudyGroupById(req.params.id);
+      if (!group) {
+        return res.status(404).json({ message: "Study group not found" });
+      }
+      res.json(group);
+    } catch (error) {
+      console.error("Error fetching study group:", error);
+      res.status(500).json({ message: "Failed to fetch study group" });
+    }
+  });
+
+  app.post('/api/study-groups', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const groupData = insertStudyGroupSchema.parse({
+        ...req.body,
+        creatorId: userId,
+      });
+      
+      const group = await storage.createStudyGroup(groupData);
+      res.json(group);
+    } catch (error) {
+      console.error("Error creating study group:", error);
+      res.status(500).json({ message: "Failed to create study group" });
+    }
+  });
+
+  app.put('/api/study-groups/:id', isAuthenticated, async (req, res) => {
+    try {
+      const group = await storage.updateStudyGroup(req.params.id, req.body);
+      res.json(group);
+    } catch (error) {
+      console.error("Error updating study group:", error);
+      res.status(500).json({ message: "Failed to update study group" });
+    }
+  });
+
+  app.delete('/api/study-groups/:id', isAuthenticated, async (req, res) => {
+    try {
+      await storage.deleteStudyGroup(req.params.id);
+      res.json({ message: "Study group deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting study group:", error);
+      res.status(500).json({ message: "Failed to delete study group" });
+    }
+  });
+
+  // Group Member routes
+  app.get('/api/study-groups/:groupId/members', async (req, res) => {
+    try {
+      const members = await storage.getGroupMembers(req.params.groupId);
+      res.json(members);
+    } catch (error) {
+      console.error("Error fetching group members:", error);
+      res.status(500).json({ message: "Failed to fetch group members" });
+    }
+  });
+
+  app.get('/api/user/study-groups', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const groups = await storage.getUserGroups(userId);
+      res.json(groups);
+    } catch (error) {
+      console.error("Error fetching user groups:", error);
+      res.status(500).json({ message: "Failed to fetch user groups" });
+    }
+  });
+
+  app.post('/api/study-groups/:groupId/join', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const memberData = insertGroupMemberSchema.parse({
+        groupId: req.params.groupId,
+        userId,
+        role: 'member',
+      });
+      
+      const member = await storage.joinGroup(memberData);
+      res.json(member);
+    } catch (error) {
+      console.error("Error joining group:", error);
+      res.status(500).json({ message: "Failed to join group" });
+    }
+  });
+
+  app.post('/api/study-groups/:groupId/leave', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      await storage.leaveGroup(req.params.groupId, userId);
+      res.json({ message: "Left group successfully" });
+    } catch (error) {
+      console.error("Error leaving group:", error);
+      res.status(500).json({ message: "Failed to leave group" });
+    }
+  });
+
+  // Group Task routes
+  app.get('/api/study-groups/:groupId/tasks', async (req, res) => {
+    try {
+      const { status } = req.query;
+      const tasks = await storage.getGroupTasks(req.params.groupId, status as string);
+      res.json(tasks);
+    } catch (error) {
+      console.error("Error fetching group tasks:", error);
+      res.status(500).json({ message: "Failed to fetch group tasks" });
+    }
+  });
+
+  app.post('/api/study-groups/:groupId/tasks', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const taskData = insertGroupTaskSchema.parse({
+        ...req.body,
+        groupId: req.params.groupId,
+        createdBy: userId,
+      });
+      
+      const task = await storage.createGroupTask(taskData);
+      res.json(task);
+    } catch (error) {
+      console.error("Error creating group task:", error);
+      res.status(500).json({ message: "Failed to create group task" });
+    }
+  });
+
+  app.put('/api/tasks/:id', isAuthenticated, async (req, res) => {
+    try {
+      const task = await storage.updateGroupTask(req.params.id, req.body);
+      res.json(task);
+    } catch (error) {
+      console.error("Error updating task:", error);
+      res.status(500).json({ message: "Failed to update task" });
+    }
+  });
+
+  app.delete('/api/tasks/:id', isAuthenticated, async (req, res) => {
+    try {
+      await storage.deleteGroupTask(req.params.id);
+      res.json({ message: "Task deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting task:", error);
+      res.status(500).json({ message: "Failed to delete task" });
+    }
+  });
+
+  // Task Progress routes
+  app.get('/api/tasks/:taskId/progress', async (req, res) => {
+    try {
+      const progress = await storage.getTaskProgress(req.params.taskId);
+      res.json(progress);
+    } catch (error) {
+      console.error("Error fetching task progress:", error);
+      res.status(500).json({ message: "Failed to fetch task progress" });
+    }
+  });
+
+  app.post('/api/tasks/:taskId/progress', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const progressData = insertTaskProgressSchema.parse({
+        ...req.body,
+        taskId: req.params.taskId,
+        userId,
+      });
+      
+      const progress = await storage.updateTaskProgress(progressData);
+      res.json(progress);
+    } catch (error) {
+      console.error("Error updating task progress:", error);
+      res.status(500).json({ message: "Failed to update task progress" });
+    }
+  });
+
+  // Learning Goal routes
+  app.get('/api/study-groups/:groupId/goals', async (req, res) => {
+    try {
+      const goals = await storage.getGroupGoals(req.params.groupId);
+      res.json(goals);
+    } catch (error) {
+      console.error("Error fetching group goals:", error);
+      res.status(500).json({ message: "Failed to fetch group goals" });
+    }
+  });
+
+  app.post('/api/study-groups/:groupId/goals', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const goalData = insertLearningGoalSchema.parse({
+        ...req.body,
+        groupId: req.params.groupId,
+        createdBy: userId,
+      });
+      
+      const goal = await storage.createLearningGoal(goalData);
+      res.json(goal);
+    } catch (error) {
+      console.error("Error creating learning goal:", error);
+      res.status(500).json({ message: "Failed to create learning goal" });
+    }
+  });
+
+  app.put('/api/goals/:id', isAuthenticated, async (req, res) => {
+    try {
+      const goal = await storage.updateLearningGoal(req.params.id, req.body);
+      res.json(goal);
+    } catch (error) {
+      console.error("Error updating learning goal:", error);
+      res.status(500).json({ message: "Failed to update learning goal" });
+    }
+  });
+
+  app.delete('/api/goals/:id', isAuthenticated, async (req, res) => {
+    try {
+      await storage.deleteLearningGoal(req.params.id);
+      res.json({ message: "Learning goal deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting learning goal:", error);
+      res.status(500).json({ message: "Failed to delete learning goal" });
     }
   });
 

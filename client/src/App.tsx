@@ -13,6 +13,8 @@ import Contribute from "@/pages/contribute.tsx";
 import Dashboard from "@/pages/dashboard.tsx";
 import AdminPage from "@/pages/admin.tsx";
 import AIInterviewPage from "@/pages/ai-interview.tsx";
+import StudyGroups from "@/pages/study-groups.tsx";
+import StudyGroupWorkspace from "@/pages/study-group-workspace.tsx";
 import AuthPage from "@/pages/auth.tsx";
 import NotFound from "@/pages/not-found.tsx";
 
@@ -25,6 +27,7 @@ function Router() {
         <>
           <Route path="/" component={Landing} />
           <Route path="/auth" component={AuthPage} />
+          <Route path="/study-groups" component={StudyGroups} />
         </>
       ) : (
         <>
@@ -36,6 +39,8 @@ function Router() {
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/admin" component={AdminPage} />
           <Route path="/ai-interview" component={AIInterviewPage} />
+          <Route path="/study-groups" component={StudyGroups} />
+          <Route path="/study-group/:id" component={StudyGroupWorkspace} />
         </>
       )}
       <Route component={NotFound} />

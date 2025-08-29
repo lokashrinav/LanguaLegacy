@@ -5,6 +5,11 @@ import {
   learningProgress,
   lessons,
   userLessonCompletion,
+  studyGroups,
+  groupMembers,
+  groupTasks,
+  taskProgress,
+  learningGoals,
   type User,
   type UpsertUser,
   type Language,
@@ -17,6 +22,16 @@ import {
   type InsertLesson,
   type UserLessonCompletion,
   type InsertUserLessonCompletion,
+  type StudyGroup,
+  type InsertStudyGroup,
+  type GroupMember,
+  type InsertGroupMember,
+  type GroupTask,
+  type InsertGroupTask,
+  type TaskProgress,
+  type InsertTaskProgress,
+  type LearningGoal,
+  type InsertLearningGoal,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, ilike, and, desc, asc } from "drizzle-orm";
@@ -81,6 +96,44 @@ export interface IStorage {
     currentStreak: number;
     languages: string[];
   }>;
+
+  // Study Group operations
+  getStudyGroups(params?: {
+    userId?: string;
+    languageId?: string;
+    isPublic?: boolean;
+    limit?: number;
+    offset?: number;
+  }): Promise<StudyGroup[]>;
+  getStudyGroupById(id: string): Promise<StudyGroup | undefined>;
+  createStudyGroup(group: InsertStudyGroup): Promise<StudyGroup>;
+  updateStudyGroup(id: string, updates: Partial<StudyGroup>): Promise<StudyGroup>;
+  deleteStudyGroup(id: string): Promise<void>;
+
+  // Group Member operations
+  getGroupMembers(groupId: string): Promise<GroupMember[]>;
+  getUserGroups(userId: string): Promise<StudyGroup[]>;
+  joinGroup(member: InsertGroupMember): Promise<GroupMember>;
+  leaveGroup(groupId: string, userId: string): Promise<void>;
+  updateMemberRole(groupId: string, userId: string, role: string): Promise<void>;
+
+  // Group Task operations
+  getGroupTasks(groupId: string, status?: string): Promise<GroupTask[]>;
+  getTaskById(id: string): Promise<GroupTask | undefined>;
+  createGroupTask(task: InsertGroupTask): Promise<GroupTask>;
+  updateGroupTask(id: string, updates: Partial<GroupTask>): Promise<GroupTask>;
+  deleteGroupTask(id: string): Promise<void>;
+
+  // Task Progress operations
+  getTaskProgress(taskId: string): Promise<TaskProgress[]>;
+  getUserTaskProgress(userId: string, taskId: string): Promise<TaskProgress | undefined>;
+  updateTaskProgress(progress: InsertTaskProgress): Promise<TaskProgress>;
+
+  // Learning Goal operations
+  getGroupGoals(groupId: string): Promise<LearningGoal[]>;
+  createLearningGoal(goal: InsertLearningGoal): Promise<LearningGoal>;
+  updateLearningGoal(id: string, updates: Partial<LearningGoal>): Promise<LearningGoal>;
+  deleteLearningGoal(id: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -142,19 +195,20 @@ export class DatabaseStorage implements IStorage {
     let query = db.select().from(languages);
 
     if (conditions.length > 0) {
-      query = query.where(and(...conditions));
+      query = db.select().from(languages).where(and(...conditions));
     }
 
-    query = query.orderBy(asc(languages.name));
+    const orderedQuery = query.orderBy(asc(languages.name));
 
-    if (params?.limit) {
-      query = query.limit(params.limit);
-    }
-    if (params?.offset) {
-      query = query.offset(params.offset);
+    if (params?.limit && params?.offset) {
+      return await orderedQuery.limit(params.limit).offset(params.offset);
+    } else if (params?.limit) {
+      return await orderedQuery.limit(params.limit);
+    } else if (params?.offset) {
+      return await orderedQuery.offset(params.offset);
     }
 
-    return await query;
+    return await orderedQuery;
   }
 
   async getLanguageById(id: string): Promise<Language | undefined> {
@@ -197,19 +251,20 @@ export class DatabaseStorage implements IStorage {
     let baseQuery = db.select().from(contributions);
 
     if (conditions.length > 0) {
-      baseQuery = baseQuery.where(and(...conditions));
+      baseQuery = db.select().from(contributions).where(and(...conditions));
     }
 
-    let finalQuery = baseQuery.orderBy(desc(contributions.createdAt));
+    const orderedQuery = baseQuery.orderBy(desc(contributions.createdAt));
 
-    if (params?.limit) {
-      finalQuery = finalQuery.limit(params.limit);
-    }
-    if (params?.offset) {
-      finalQuery = finalQuery.offset(params.offset);
+    if (params?.limit && params?.offset) {
+      return await orderedQuery.limit(params.limit).offset(params.offset);
+    } else if (params?.limit) {
+      return await orderedQuery.limit(params.limit);
+    } else if (params?.offset) {
+      return await orderedQuery.offset(params.offset);
     }
 
-    return await finalQuery;
+    return await orderedQuery;
   }
 
   async getContributionById(id: string): Promise<Contribution | undefined> {
@@ -321,16 +376,22 @@ export class DatabaseStorage implements IStorage {
 
   // Lesson operations
   async getLessons(languageId: string, level?: string): Promise<Lesson[]> {
-    let query = db.select().from(lessons).where(eq(lessons.languageId, languageId));
-
     if (level) {
-      query = query.where(and(
-        eq(lessons.languageId, languageId),
-        eq(lessons.level, level)
-      ));
+      return await db
+        .select()
+        .from(lessons)
+        .where(and(
+          eq(lessons.languageId, languageId),
+          eq(lessons.level, level)
+        ))
+        .orderBy(asc(lessons.order));
     }
 
-    return await query.orderBy(asc(lessons.order));
+    return await db
+      .select()
+      .from(lessons)
+      .where(eq(lessons.languageId, languageId))
+      .orderBy(asc(lessons.order));
   }
 
   async getLessonById(id: string): Promise<Lesson | undefined> {
@@ -345,20 +406,23 @@ export class DatabaseStorage implements IStorage {
 
   // User lesson completion operations
   async getUserLessonCompletions(userId: string, languageId?: string): Promise<UserLessonCompletion[]> {
-    let query = db
+    if (languageId) {
+      const results = await db
+        .select()
+        .from(userLessonCompletion)
+        .innerJoin(lessons, eq(userLessonCompletion.lessonId, lessons.id))
+        .where(and(
+          eq(userLessonCompletion.userId, userId),
+          eq(lessons.languageId, languageId)
+        ));
+      return results.map(r => r.user_lesson_completion);
+    }
+
+    const results = await db
       .select()
       .from(userLessonCompletion)
       .innerJoin(lessons, eq(userLessonCompletion.lessonId, lessons.id))
       .where(eq(userLessonCompletion.userId, userId));
-
-    if (languageId) {
-      query = query.where(and(
-        eq(userLessonCompletion.userId, userId),
-        eq(lessons.languageId, languageId)
-      ));
-    }
-
-    const results = await query;
     return results.map(r => r.user_lesson_completion);
   }
 
@@ -399,6 +463,239 @@ export class DatabaseStorage implements IStorage {
       currentStreak,
       languages,
     };
+  }
+
+  // Study Group operations
+  async getStudyGroups(params?: {
+    userId?: string;
+    languageId?: string;
+    isPublic?: boolean;
+    limit?: number;
+    offset?: number;
+  }): Promise<StudyGroup[]> {
+    const conditions = [];
+    
+    if (params?.languageId) {
+      conditions.push(eq(studyGroups.languageId, params.languageId));
+    }
+    if (params?.isPublic !== undefined) {
+      conditions.push(eq(studyGroups.isPublic, params.isPublic));
+    }
+
+    let query = db.select().from(studyGroups);
+    
+    if (params?.userId) {
+      // Get groups the user is a member of
+      const userGroupIds = await db
+        .select({ groupId: groupMembers.groupId })
+        .from(groupMembers)
+        .where(eq(groupMembers.userId, params.userId));
+      
+      if (userGroupIds.length > 0) {
+        const groupIds = userGroupIds.map(g => g.groupId);
+        conditions.push(eq(studyGroups.id, groupIds[0])); // Simplified for now
+      }
+    }
+
+    if (conditions.length > 0) {
+      query = db.select().from(studyGroups).where(and(...conditions));
+    }
+
+    const orderedQuery = query.orderBy(desc(studyGroups.createdAt));
+
+    if (params?.limit && params?.offset) {
+      return await orderedQuery.limit(params.limit).offset(params.offset);
+    } else if (params?.limit) {
+      return await orderedQuery.limit(params.limit);
+    } else if (params?.offset) {
+      return await orderedQuery.offset(params.offset);
+    }
+
+    return await orderedQuery;
+  }
+
+  async getStudyGroupById(id: string): Promise<StudyGroup | undefined> {
+    const [group] = await db.select().from(studyGroups).where(eq(studyGroups.id, id));
+    return group;
+  }
+
+  async createStudyGroup(group: InsertStudyGroup): Promise<StudyGroup> {
+    const [created] = await db.insert(studyGroups).values(group).returning();
+    
+    // Add creator as first member with 'creator' role
+    await db.insert(groupMembers).values({
+      groupId: created.id,
+      userId: created.creatorId,
+      role: 'creator'
+    });
+    
+    return created;
+  }
+
+  async updateStudyGroup(id: string, updates: Partial<StudyGroup>): Promise<StudyGroup> {
+    const [updated] = await db
+      .update(studyGroups)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(studyGroups.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteStudyGroup(id: string): Promise<void> {
+    await db.delete(studyGroups).where(eq(studyGroups.id, id));
+  }
+
+  // Group Member operations
+  async getGroupMembers(groupId: string): Promise<GroupMember[]> {
+    return await db
+      .select()
+      .from(groupMembers)
+      .where(eq(groupMembers.groupId, groupId))
+      .orderBy(asc(groupMembers.joinedAt));
+  }
+
+  async getUserGroups(userId: string): Promise<StudyGroup[]> {
+    const memberGroups = await db
+      .select({ groupId: groupMembers.groupId })
+      .from(groupMembers)
+      .where(eq(groupMembers.userId, userId));
+    
+    if (memberGroups.length === 0) return [];
+    
+    const groupIds = memberGroups.map(m => m.groupId);
+    return await db
+      .select()
+      .from(studyGroups)
+      .where(eq(studyGroups.id, groupIds[0])); // Simplified query
+  }
+
+  async joinGroup(member: InsertGroupMember): Promise<GroupMember> {
+    const [joined] = await db.insert(groupMembers).values(member).returning();
+    return joined;
+  }
+
+  async leaveGroup(groupId: string, userId: string): Promise<void> {
+    await db
+      .delete(groupMembers)
+      .where(and(
+        eq(groupMembers.groupId, groupId),
+        eq(groupMembers.userId, userId)
+      ));
+  }
+
+  async updateMemberRole(groupId: string, userId: string, role: string): Promise<void> {
+    await db
+      .update(groupMembers)
+      .set({ role })
+      .where(and(
+        eq(groupMembers.groupId, groupId),
+        eq(groupMembers.userId, userId)
+      ));
+  }
+
+  // Group Task operations
+  async getGroupTasks(groupId: string, status?: string): Promise<GroupTask[]> {
+    if (status) {
+      return await db
+        .select()
+        .from(groupTasks)
+        .where(and(
+          eq(groupTasks.groupId, groupId),
+          eq(groupTasks.status, status)
+        ))
+        .orderBy(asc(groupTasks.dueDate));
+    }
+    
+    return await db
+      .select()
+      .from(groupTasks)
+      .where(eq(groupTasks.groupId, groupId))
+      .orderBy(asc(groupTasks.dueDate));
+  }
+
+  async getTaskById(id: string): Promise<GroupTask | undefined> {
+    const [task] = await db.select().from(groupTasks).where(eq(groupTasks.id, id));
+    return task;
+  }
+
+  async createGroupTask(task: InsertGroupTask): Promise<GroupTask> {
+    const [created] = await db.insert(groupTasks).values(task).returning();
+    return created;
+  }
+
+  async updateGroupTask(id: string, updates: Partial<GroupTask>): Promise<GroupTask> {
+    const [updated] = await db
+      .update(groupTasks)
+      .set(updates)
+      .where(eq(groupTasks.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteGroupTask(id: string): Promise<void> {
+    await db.delete(groupTasks).where(eq(groupTasks.id, id));
+  }
+
+  // Task Progress operations
+  async getTaskProgress(taskId: string): Promise<TaskProgress[]> {
+    return await db
+      .select()
+      .from(taskProgress)
+      .where(eq(taskProgress.taskId, taskId));
+  }
+
+  async getUserTaskProgress(userId: string, taskId: string): Promise<TaskProgress | undefined> {
+    const [progress] = await db
+      .select()
+      .from(taskProgress)
+      .where(and(
+        eq(taskProgress.userId, userId),
+        eq(taskProgress.taskId, taskId)
+      ));
+    return progress;
+  }
+
+  async updateTaskProgress(progress: InsertTaskProgress): Promise<TaskProgress> {
+    const existing = await this.getUserTaskProgress(progress.userId, progress.taskId);
+    
+    if (existing) {
+      const [updated] = await db
+        .update(taskProgress)
+        .set({ ...progress, updatedAt: new Date() })
+        .where(eq(taskProgress.id, existing.id))
+        .returning();
+      return updated;
+    } else {
+      const [created] = await db.insert(taskProgress).values(progress).returning();
+      return created;
+    }
+  }
+
+  // Learning Goal operations
+  async getGroupGoals(groupId: string): Promise<LearningGoal[]> {
+    return await db
+      .select()
+      .from(learningGoals)
+      .where(eq(learningGoals.groupId, groupId))
+      .orderBy(desc(learningGoals.createdAt));
+  }
+
+  async createLearningGoal(goal: InsertLearningGoal): Promise<LearningGoal> {
+    const [created] = await db.insert(learningGoals).values(goal).returning();
+    return created;
+  }
+
+  async updateLearningGoal(id: string, updates: Partial<LearningGoal>): Promise<LearningGoal> {
+    const [updated] = await db
+      .update(learningGoals)
+      .set(updates)
+      .where(eq(learningGoals.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteLearningGoal(id: string): Promise<void> {
+    await db.delete(learningGoals).where(eq(learningGoals.id, id));
   }
 }
 

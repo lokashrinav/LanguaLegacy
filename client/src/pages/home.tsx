@@ -147,6 +147,24 @@ export default function Home() {
                 </Link>
               </CardContent>
             </Card>
+
+            <Card className="hover:shadow-lg transition-shadow bg-white" data-testid="card-study-groups">
+              <CardHeader>
+                <CardTitle>
+                  Study Groups
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground mb-4">
+                  Join collaborative learning spaces with others
+                </p>
+                <Link to="/study-groups">
+                  <Button variant="secondary" className="w-full" data-testid="button-study-groups">
+                    Browse Groups
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>

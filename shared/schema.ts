@@ -255,6 +255,100 @@ export const insertUserLessonCompletionSchema = createInsertSchema(userLessonCom
   createdAt: true,
 });
 
+// Study Groups for collaborative learning
+export const studyGroups = pgTable("study_groups", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  languageId: varchar("language_id").notNull().references(() => languages.id, { onDelete: "cascade" }),
+  creatorId: varchar("creator_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  maxMembers: integer("max_members").default(10),
+  isPublic: boolean("is_public").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Group Members
+export const groupMembers = pgTable("group_members", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  groupId: varchar("group_id").notNull().references(() => studyGroups.id, { onDelete: "cascade" }),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  role: varchar("role", { length: 50 }).notNull().default("member"), // creator, moderator, member
+  joinedAt: timestamp("joined_at").defaultNow(),
+});
+
+// Group Tasks for collaborative study sessions
+export const groupTasks = pgTable("group_tasks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  groupId: varchar("group_id").notNull().references(() => studyGroups.id, { onDelete: "cascade" }),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  taskType: varchar("task_type", { length: 50 }).notNull(), // lesson, practice, contribution, review
+  targetLessonId: varchar("target_lesson_id").references(() => lessons.id, { onDelete: "set null" }),
+  dueDate: timestamp("due_date"),
+  status: varchar("status", { length: 50 }).notNull().default("pending"), // pending, in_progress, completed
+  createdBy: varchar("created_by").notNull().references(() => users.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").defaultNow(),
+  completedAt: timestamp("completed_at"),
+});
+
+// Task Progress for individual members
+export const taskProgress = pgTable("task_progress", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  taskId: varchar("task_id").notNull().references(() => groupTasks.id, { onDelete: "cascade" }),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  status: varchar("status", { length: 50 }).notNull().default("not_started"), // not_started, in_progress, completed
+  notes: text("notes"),
+  completedAt: timestamp("completed_at"),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Learning Goals for groups
+export const learningGoals = pgTable("learning_goals", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  groupId: varchar("group_id").notNull().references(() => studyGroups.id, { onDelete: "cascade" }),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  targetDate: timestamp("target_date"),
+  metric: varchar("metric", { length: 100 }), // lessons_completed, hours_studied, contributions_made
+  targetValue: integer("target_value"),
+  currentValue: integer("current_value").default(0),
+  status: varchar("status", { length: 50 }).notNull().default("active"), // active, achieved, abandoned
+  createdAt: timestamp("created_at").defaultNow(),
+  achievedAt: timestamp("achieved_at"),
+});
+
+// Insert schemas for collaborative features
+export const insertStudyGroupSchema = createInsertSchema(studyGroups).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertGroupMemberSchema = createInsertSchema(groupMembers).omit({
+  id: true,
+  joinedAt: true,
+});
+
+export const insertGroupTaskSchema = createInsertSchema(groupTasks).omit({
+  id: true,
+  createdAt: true,
+  completedAt: true,
+});
+
+export const insertTaskProgressSchema = createInsertSchema(taskProgress).omit({
+  id: true,
+  updatedAt: true,
+  completedAt: true,
+});
+
+export const insertLearningGoalSchema = createInsertSchema(learningGoals).omit({
+  id: true,
+  createdAt: true,
+  achievedAt: true,
+  currentValue: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -268,3 +362,13 @@ export type Lesson = typeof lessons.$inferSelect;
 export type InsertLesson = z.infer<typeof insertLessonSchema>;
 export type UserLessonCompletion = typeof userLessonCompletion.$inferSelect;
 export type InsertUserLessonCompletion = z.infer<typeof insertUserLessonCompletionSchema>;
+export type StudyGroup = typeof studyGroups.$inferSelect;
+export type InsertStudyGroup = z.infer<typeof insertStudyGroupSchema>;
+export type GroupMember = typeof groupMembers.$inferSelect;
+export type InsertGroupMember = z.infer<typeof insertGroupMemberSchema>;
+export type GroupTask = typeof groupTasks.$inferSelect;
+export type InsertGroupTask = z.infer<typeof insertGroupTaskSchema>;
+export type TaskProgress = typeof taskProgress.$inferSelect;
+export type InsertTaskProgress = z.infer<typeof insertTaskProgressSchema>;
+export type LearningGoal = typeof learningGoals.$inferSelect;
+export type InsertLearningGoal = z.infer<typeof insertLearningGoalSchema>;
