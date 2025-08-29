@@ -144,9 +144,9 @@ Generate exactly ${count} different real endangered languages in this format. On
           const createdLanguage = await storage.createLanguage(langData);
           console.log(`Created language: ${langData.name}`);
           
-          // Create basic lessons for this language
-          await this.createBasicLessons(createdLanguage.id, langData.name);
-          console.log(`Created lessons for: ${langData.name}`);
+          // Create AI-generated course for this language
+          await this.createAIGeneratedCourse(createdLanguage.id, langData);
+          console.log(`Created AI-generated course for: ${langData.name}`);
           
           results.created++;
         } catch (error) {
@@ -166,161 +166,151 @@ Generate exactly ${count} different real endangered languages in this format. On
     return results;
   }
 
-  private async createBasicLessons(languageId: string, languageName: string): Promise<void> {
-    const basicLessons = [
+  private async createAIGeneratedCourse(languageId: string, language: any): Promise<void> {
+    console.log(`=== GENERATING AI COURSE FOR ${language.name} ===`);
+    
+    const prompt = `Create a comprehensive language learning course for "${language.name}" (native name: "${language.nativeName || language.name}").
+
+Language Details:
+- Region: ${language.region}
+- Country: ${language.country || 'Unknown'}
+- Speakers: ${language.speakers || 'Unknown'}
+- Threat Level: ${language.threatLevel}
+- Language Family: ${language.family || 'Unknown'}
+- Description: ${language.description || 'No description available'}
+
+Create exactly 8 lessons for this specific language. Include REAL words, phrases, and cultural context specific to this language and region. 
+
+Return a JSON array with this exact structure:
+[
+  {
+    "title": "Lesson title",
+    "description": "Lesson description", 
+    "level": "beginner|intermediate|advanced",
+    "order": 1,
+    "content": {
+      "phrases": [
+        {
+          "original": "actual word/phrase in the language",
+          "phonetic": "IPA or simplified phonetic transcription",
+          "translation": "English translation",
+          "context": "when/how this is used"
+        }
+      ],
+      "duration": 15,
+      "culturalContext": "specific cultural information about these words/phrases",
+      "grammar": "any relevant grammar notes",
+      "pronunciation": "pronunciation tips specific to this language"
+    }
+  }
+]
+
+The 8 lessons should cover:
+1. Essential greetings and politeness
+2. Family and kinship terms
+3. Numbers and counting system
+4. Colors and descriptive words
+5. Food and daily activities
+6. Nature and environment terms
+7. Traditional concepts and cultural terms
+8. Advanced expressions and storytelling phrases
+
+Make sure each lesson contains 4-6 actual phrases/words from ${language.name}, with accurate phonetic transcriptions and cultural context specific to ${language.region} and the communities that speak this language.
+
+Return ONLY the JSON array, no other text.`;
+
+    try {
+      const response = await anthropic.messages.create({
+        model: DEFAULT_MODEL_STR,
+        max_tokens: 4000,
+        messages: [{ role: 'user', content: prompt }],
+      });
+
+      const content = response.content[0];
+      if (content.type !== 'text') {
+        throw new Error('Unexpected response type from AI');
+      }
+
+      console.log(`=== RAW AI COURSE RESPONSE FOR ${language.name} ===`);
+      console.log(content.text);
+      console.log('=== END RAW COURSE RESPONSE ===');
+      
+      // Clean the response text
+      let cleanText = content.text.trim();
+      
+      // Remove markdown code blocks
+      if (cleanText.startsWith('```json')) {
+        cleanText = cleanText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+      } else if (cleanText.startsWith('```')) {
+        cleanText = cleanText.replace(/^```\s*/, '').replace(/\s*```$/, '');
+      }
+      
+      // Extract JSON array
+      const firstBracket = cleanText.indexOf('[');
+      const lastBracket = cleanText.lastIndexOf(']');
+      if (firstBracket >= 0 && lastBracket > firstBracket) {
+        cleanText = cleanText.substring(firstBracket, lastBracket + 1);
+      }
+
+      let lessonsData;
+      try {
+        lessonsData = JSON.parse(cleanText);
+      } catch (parseError) {
+        console.error(`Failed to parse course data for ${language.name}:`, parseError);
+        throw new Error(`JSON parsing failed for ${language.name}: ${parseError}`);
+      }
+      
+      if (!Array.isArray(lessonsData)) {
+        throw new Error(`Course data for ${language.name} is not an array`);
+      }
+
+      console.log(`Generated ${lessonsData.length} lessons for ${language.name}`);
+
+      // Create each lesson
+      for (const lessonData of lessonsData) {
+        try {
+          await storage.createLesson({
+            languageId,
+            title: lessonData.title,
+            description: lessonData.description,
+            level: lessonData.level,
+            order: lessonData.order,
+            content: lessonData.content
+          });
+          console.log(`Created lesson: "${lessonData.title}" for ${language.name}`);
+        } catch (error) {
+          console.error(`Failed to create lesson "${lessonData.title}" for ${language.name}:`, error);
+        }
+      }
+      
+    } catch (error) {
+      console.error(`Error generating course for ${language.name}:`, error);
+      // Fallback to basic course if AI generation fails
+      await this.createFallbackLessons(languageId, language.name);
+    }
+  }
+
+  private async createFallbackLessons(languageId: string, languageName: string): Promise<void> {
+    console.log(`Creating fallback lessons for ${languageName}`);
+    
+    const fallbackLessons = [
       {
         title: "Basic Greetings",
-        description: `Learn essential greetings and introductions in ${languageName}`,
+        description: `Essential greetings in ${languageName}`,
         level: "beginner",
         order: 1,
         content: {
           phrases: [
-            {
-              original: "Hello",
-              phonetic: "həˈloʊ",
-              translation: "A greeting used when meeting someone",
-              context: "Used in most social situations"
-            },
-            {
-              original: "Good morning",
-              phonetic: "ɡʊd ˈmɔːrnɪŋ",
-              translation: "Morning greeting",
-              context: "Used before noon"
-            },
-            {
-              original: "Thank you",
-              phonetic: "θæŋk juː",
-              translation: "Expression of gratitude",
-              context: "Used to show appreciation"
-            }
+            { original: "Hello", phonetic: "hello", translation: "Greeting", context: "General greeting" },
+            { original: "Thank you", phonetic: "thank you", translation: "Gratitude", context: "Showing appreciation" }
           ],
           duration: 15,
-          culturalContext: `These greetings are fundamental to ${languageName} culture and show respect for others.`
-        }
-      },
-      {
-        title: "Family and Relationships",
-        description: `Discover words for family members and relationships in ${languageName}`,
-        level: "beginner",
-        order: 2,
-        content: {
-          phrases: [
-            {
-              original: "Mother",
-              phonetic: "ˈmʌðər",
-              translation: "Female parent",
-              context: "Family relationship"
-            },
-            {
-              original: "Father",
-              phonetic: "ˈfɑːðər",
-              translation: "Male parent",
-              context: "Family relationship"
-            },
-            {
-              original: "Child",
-              phonetic: "tʃaɪld",
-              translation: "Young person",
-              context: "Family relationship"
-            }
-          ],
-          duration: 20,
-          culturalContext: `Family structures and relationships hold special significance in ${languageName} culture.`
-        }
-      },
-      {
-        title: "Numbers and Counting",
-        description: `Learn the number system in ${languageName}`,
-        level: "beginner",
-        order: 3,
-        content: {
-          phrases: [
-            {
-              original: "One",
-              phonetic: "wʌn",
-              translation: "The number 1",
-              context: "Basic counting"
-            },
-            {
-              original: "Two",
-              phonetic: "tuː",
-              translation: "The number 2",
-              context: "Basic counting"
-            },
-            {
-              original: "Three",
-              phonetic: "θriː",
-              translation: "The number 3",
-              context: "Basic counting"
-            }
-          ],
-          duration: 18,
-          culturalContext: `Traditional counting systems often reflect cultural values and mathematical concepts.`
-        }
-      },
-      {
-        title: "Colors and Nature",
-        description: `Explore colors and natural elements in ${languageName}`,
-        level: "intermediate",
-        order: 4,
-        content: {
-          phrases: [
-            {
-              original: "Red",
-              phonetic: "red",
-              translation: "The color red",
-              context: "Describing objects"
-            },
-            {
-              original: "Blue",
-              phonetic: "bluː",
-              translation: "The color blue",
-              context: "Describing objects"
-            },
-            {
-              original: "Green",
-              phonetic: "ɡriːn",
-              translation: "The color green",
-              context: "Describing objects"
-            }
-          ],
-          duration: 25,
-          culturalContext: `Colors often have cultural and spiritual significance in indigenous languages.`
-        }
-      },
-      {
-        title: "Daily Activities",
-        description: `Learn words for common daily activities in ${languageName}`,
-        level: "intermediate",
-        order: 5,
-        content: {
-          phrases: [
-            {
-              original: "To eat",
-              phonetic: "tuː iːt",
-              translation: "Consuming food",
-              context: "Daily activity"
-            },
-            {
-              original: "To sleep",
-              phonetic: "tuː sliːp",
-              translation: "Resting at night",
-              context: "Daily activity"
-            },
-            {
-              original: "To work",
-              phonetic: "tuː wɜːrk",
-              translation: "Performing tasks",
-              context: "Daily activity"
-            }
-          ],
-          duration: 22,
-          culturalContext: `Daily activities reflect the lifestyle and values of the community.`
+          culturalContext: `Basic courtesy expressions in ${languageName}`
         }
       }
     ];
 
-    for (const lessonData of basicLessons) {
+    for (const lessonData of fallbackLessons) {
       try {
         await storage.createLesson({
           languageId,
@@ -331,7 +321,7 @@ Generate exactly ${count} different real endangered languages in this format. On
           content: lessonData.content
         });
       } catch (error) {
-        console.error(`Failed to create lesson "${lessonData.title}" for ${languageName}:`, error);
+        console.error(`Failed to create fallback lesson for ${languageName}:`, error);
       }
     }
   }
