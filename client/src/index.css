@@ -155,42 +155,16 @@
   @keyframes fadeIn {
     from {
       opacity: 0;
-      transform: translateY(10px);
     }
     to {
       opacity: 1;
-      transform: translateY(0);
     }
   }
   
   .animate-fade-in {
-    animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: fadeIn 0.25s ease-in-out;
   }
   
-  /* Tab content smooth transitions without flicker */
-  [role="tabpanel"] {
-    transition: opacity 0.2s ease-in-out;
-  }
-  
-  [role="tabpanel"][data-state="inactive"] {
-    opacity: 0;
-    pointer-events: none;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-  }
-  
-  [role="tabpanel"][data-state="active"] {
-    opacity: 1;
-    pointer-events: auto;
-    position: relative;
-  }
-  
-  /* Tab trigger active state */
-  [role="tab"][data-state="active"] {
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  }
   
   /* Smooth card transitions */
   .study-group-card {
