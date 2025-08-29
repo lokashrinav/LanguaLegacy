@@ -14,7 +14,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Plus, Globe, BookOpen, Users, Archive, Map, Settings } from "lucide-react";
+import { Trash2, Plus, Globe, BookOpen, Users, Archive, Map, Settings, Database, Sparkles } from "lucide-react";
+import DatabaseSeeding from "@/components/DatabaseSeeding";
 
 const languageFormSchema = z.object({
   // Basic Information
@@ -78,6 +79,9 @@ const threatLevelLabels = {
 export default function AdminPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [seedingCount, setSeedingCount] = useState(50);
+  const [selectedRegions, setSelectedRegions] = useState<string[]>([]);
+  const [selectedThreatLevels, setSelectedThreatLevels] = useState<string[]>([]);
 
   const form = useForm<LanguageFormData>({
     resolver: zodResolver(languageFormSchema),
@@ -117,6 +121,17 @@ export default function AdminPage() {
   // Fetch existing languages
   const { data: languages = [], isLoading } = useQuery({
     queryKey: ["/api/languages"],
+  });
+
+  // Fetch database summary
+  const { data: dbSummary, isLoading: summaryLoading } = useQuery<{
+    totalLanguages: number;
+    byThreatLevel: Record<string, number>;
+    byRegion: Record<string, number>;
+    recentlyAdded: number;
+  }>({
+    queryKey: ["/api/admin/database-summary"],
+    refetchInterval: 30000, // Refresh every 30 seconds
   });
 
   // Create language mutation
@@ -159,6 +174,30 @@ export default function AdminPage() {
         description: error.message,
         variant: "destructive",
       });
+    },
+  });
+
+  // Database seeding mutation
+  const seedDatabaseMutation = useMutation({
+    mutationFn: async (params: { count: number; regions: string[]; threatLevels: string[] }) => {
+      const res = await apiRequest("POST", "/api/admin/seed-languages", params);
+      return await res.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/languages"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/database-summary"] });
+      toast({
+        title: "Database Seeding Complete!",
+        description: `Created ${data.results.created} languages, skipped ${data.results.skipped} duplicates.`,
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Seeding Failed",
+        description: "Failed to seed database. Please try again.",
+        variant: "destructive",
+      });
+      console.error("Error seeding database:", error);
     },
   });
 
@@ -252,7 +291,20 @@ export default function AdminPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <Tabs defaultValue="manual" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-8">
+            <TabsTrigger value="manual" className="flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              Manual Entry
+            </TabsTrigger>
+            <TabsTrigger value="database" className="flex items-center gap-2">
+              <Database className="h-4 w-4" />
+              AI Database Seeding
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="manual">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Add Language Form */}
           <div className="lg:col-span-2">
             <Card className="border-2" style={{ borderColor: 'hsl(25 25% 80%)', backgroundColor: 'white' }}>
@@ -874,7 +926,13 @@ export default function AdminPage() {
               )}
             </CardContent>
           </Card>
-        </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="database">
+            <DatabaseSeeding />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

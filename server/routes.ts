@@ -104,6 +104,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Database seeding routes
+  app.post('/api/admin/seed-languages', isAuthenticated, async (req, res) => {
+    try {
+      const { languageSeeder } = await import('./dataSeeder');
+      
+      const { count = 50, regions = [], threatLevels = [] } = req.body;
+      
+      const results = await languageSeeder.seedDatabase({
+        count,
+        regions,
+        threatLevels
+      });
+      
+      res.json({
+        message: "Database seeding completed",
+        results
+      });
+    } catch (error) {
+      console.error("Error seeding database:", error);
+      res.status(500).json({ 
+        message: "Failed to seed database",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  app.get('/api/admin/database-summary', isAuthenticated, async (req, res) => {
+    try {
+      const { languageSeeder } = await import('./dataSeeder');
+      
+      const summary = await languageSeeder.getDataSummary();
+      
+      res.json(summary);
+    } catch (error) {
+      console.error("Error getting database summary:", error);
+      res.status(500).json({ message: "Failed to get database summary" });
+    }
+  });
+
   // Contribution routes
   app.get('/api/contributions', async (req, res) => {
     try {
