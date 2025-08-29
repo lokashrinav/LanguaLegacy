@@ -60,8 +60,8 @@ export function setupAuth(app: Express) {
     store: sessionStore,
     cookie: {
       httpOnly: true,
-      sameSite: "lax", // Use 'lax' for better compatibility
-      secure: isProduction, // Use secure cookies in production
+      sameSite: isProduction ? "none" : "lax", // 'none' required for cross-origin in production
+      secure: isProduction, // Required with sameSite: none
       maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
       // Don't set domain - let the browser handle it automatically
       path: '/',
@@ -71,6 +71,15 @@ export function setupAuth(app: Express) {
   };
 
   app.use(session(sessionSettings));
+  
+  // Log session middleware setup
+  console.log("[Auth Setup] Session middleware configured with:", {
+    secure: sessionSettings.cookie?.secure,
+    sameSite: sessionSettings.cookie?.sameSite,
+    httpOnly: sessionSettings.cookie?.httpOnly,
+    proxy: sessionSettings.proxy,
+    env: process.env.NODE_ENV
+  });
 
   // Setup Replit auth if available  
   if (process.env.REPL_ID && process.env.REPLIT_DOMAINS) {
