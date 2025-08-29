@@ -257,9 +257,12 @@ export function setupAuth(app: Express) {
 
       // Verify the Firebase ID token
       console.log("[Google Auth] Starting Firebase verification");
-      const admin = await import("firebase-admin");
+      const firebaseAdmin = await import("firebase-admin");
+      const admin = firebaseAdmin.default || firebaseAdmin;
       
-      if (!admin.apps.length) {
+      // Check if Firebase Admin is already initialized
+      const apps = admin.apps || [];
+      if (apps.length === 0) {
         console.log("[Google Auth] Initializing Firebase Admin SDK");
         const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT;
         
