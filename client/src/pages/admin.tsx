@@ -342,7 +342,7 @@ export default function AdminPage() {
   // Show loading state while checking auth
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-background p-4 animate-fade-in flex items-center justify-center">
+      <div className="min-h-screen bg-background p-4 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Checking authorization...</p>
@@ -354,7 +354,7 @@ export default function AdminPage() {
   // Don't render admin content if not authorized
   if (!user || user.email !== 'lokashrinav@gmail.com') {
     return (
-      <div className="min-h-screen bg-background p-4 animate-fade-in flex items-center justify-center">
+      <div className="min-h-screen bg-background p-4 flex items-center justify-center">
         <Card className="max-w-md w-full">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-destructive">
@@ -371,7 +371,7 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 animate-fade-in">
+    <div className="min-h-screen bg-background p-4">
       <div className="max-w-6xl mx-auto space-y-8">
         <div className="text-center">
           <h1 className="text-3xl font-bold mb-2" style={{ color: 'hsl(25 20% 25%)' }}>

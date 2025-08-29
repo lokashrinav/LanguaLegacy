@@ -26,7 +26,7 @@ export default function Home() {
   });
 
   return (
-    <div className="min-h-screen bg-background animate-fade-in">
+    <div className="min-h-screen bg-background">
       <Navigation />
       
       {/* Welcome Section */}
