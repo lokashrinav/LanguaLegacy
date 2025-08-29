@@ -1,0 +1,176 @@
+Cross-Origin-Opener-Policy policy would block the window.closed call error while using google auth
+Asked 2 years, 2 months ago
+Modified 7 months ago
+Viewed 108k times
+ Part of Google Cloud Collective
+85
+
+I am using firebase and its google auth tool , everything works fine the user data is getting saved in the database but i get a error every time the popup window appears (Cross-Origin-Opener-Policy policy would block the window.closed call)
+
+enter image description here enter image description here
+
+i am using next js and do help me resolve the error thank you
+
+firebasenext.jsoauth-2.0firebase-authenticationcors
+Share
+Improve this question
+Follow
+edited Jun 30, 2023 at 16:12
+asked Jun 10, 2023 at 15:20
+Chandan h's user avatar
+Chandan h
+96811 gold badge55 silver badges99 bronze badges
+can you share the code link or create a reusable codebase? it might be because of a configuration issue, package versions, or even Chrome version. I never had such an issue with Firebase – 
+Yilmaz
+ CommentedJun 24, 2023 at 1:49 
+Same error here, I was trying to access from localhost because thats what has always worked, but was getting the CORS error. I then switched from localhost to the localhost IP (which I needed to add to firebase authorized domains), and it worked, and now it works for both localhost and the localhost ip. Strange. – 
+Blake
+ CommentedJun 24, 2023 at 7:38
+Did you manage to figure this out? Have the same issue, although using Angular. – 
+Spock
+ CommentedJun 25, 2023 at 14:33
+9
+Ugh, same. Are all +20 of us doing something wrong or is there something buggy with Firebase? I'm using SvelteKit. – 
+Beyondo
+ CommentedJul 30, 2023 at 0:38
+Add a comment
+8 Answers
+Sorted by:
+
+Highest score (default)
+11
+
+This error appears in the firebaseui npm package.
+
+The first important thing to understand is that sign-in problem might not be related to the displayed console error: Cross-Origin-Opener-Policy policy would block the window.close call.
+
+signInFlow="redirect"
+The easiest way to check that your code is working without the error is to switch temporarily from signInFlow="popup" to signInFlow="redirect", which is the default value in Firebase UI Auth.
+
+If Auth does not work
+Check the code on:
+
+Missed JS Context, for example, <AuthProvider/> in React.
+
+Subscribe to firebase/auth events and check that the user object is returned (React example):
+
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+
+
+const StyledFirebaseAuth = () => {   
+  useEffect(() => {
+
+  const unregisterAuthObserver = onAuthStateChanged(
+   getAuth(),
+   async (user) => {
+     console.log('user', user);
+   },
+ );
+
+// the rest of code
+}
+Check Firebase Sign-in method settings to allow specific providers Firebase Sign-in method
+
+Check Firebase Authentication allowed domains Firebase Authentication allowed domains
+
+Check your Firebase configuration for the web application:
+
+ const firebaseConfig = {
+   apiKey: "ABCDEF...",
+   authDomain: "your-project-domain",
+   projectId: "you-project",
+   appId: "1:abcdef..."
+ };
+Trying get rid of the console error
+Chrome blog suggests to use Cross-Origin-Opener-Policy: restrict-properties with Cross-Origin-Embedder-Policy: require-corp. Sadly, it will not work with Firebase UI.
+
+The problem is with Cross-Origin-Embedder-Policy header, which is by default should be set to unsafe-none.
+
+This header should be returned with the html page or omitted (the implicit default value). It is possible to set it up manually.
+
+response headers
+
+Please notice that to correctly test it, a server should be restarted and browser cache cleared or a new incognito window used.
+
+Local development:
+Below are React examples but similarly should work other frameworks.
+
+For create-react-app and craco modify craco.config.js as:
+ module.exports = {
+   devServer: {
+     headers: {
+       'Cross-Origin-Embedder-Policy': 'unsafe-none'
+     }
+   }
+ }
+For Next.js modify next.config.js:
+ module.exports = {
+   async headers() {
+     return [
+       {
+         source: "/login",
+         headers: [
+           {
+             key: "Cross-Origin-Embedder-Policy",
+             value: "unsafe-none",
+           },
+         ],
+       },
+     ];
+   },
+ };
+Firebase hosting
+Firebase allows to specify headers that are passed for the hosted files, including .html, .js. Modify firebase.json file, for example, for a Single Page Application (SPA):
+
+{
+  "hosting": [
+    {
+      "target": "web",
+      "public": "web/build",
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ],
+      "headers": [
+        {
+          "source": "**/*",
+          "headers": [
+            {
+              "key": "Cross-Origin-Embedder-Policy",
+              "value": "unsafe-none"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+Although after my attempts to change Cross-Origin-Opener-Policy, Cross-Origin-Resource-Policy and Cross-Origin-Embedder-Policy to different values still the error log appears in the Chrome browser but the sign-in method is working.
+
+For more strict security settings and the unsafe-none value please refer to the documentation.
+
+Share
+Improve this answer
+Follow
+edited Oct 15, 2023 at 18:31
+answered Oct 15, 2023 at 17:58
+Artur A's user avatar
+Artur A
+9,42911 gold badge6464 silver badges6464 bronze badges
+1
+@Arthur A Can you please tell me how should I add unsafe-none for npm create vite@latest my-project -- --template react? – 
+Thakur Saad
+ CommentedJun 3, 2024 at 13:17 
+@ThakurSaad you can use defineConfig for vite, similar to github.com/vitejs/vite/issues/11862 – 
+Artur A
+ CommentedJun 6, 2024 at 11:56
+I've done this export default defineConfig({plugins: [react()], server: { headers: {"Cross-Origin-Embedder-Policy": "unsafe-none",},},}); But still getting the console error. – 
+Thakur Saad
+ CommentedJun 9, 2024 at 10:32 
+1
+Interesting idea, but wasn't solving window.closed console error. – 
+Matt Jensen
+ CommentedJul 2 at 21:48

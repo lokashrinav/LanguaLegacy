@@ -8,6 +8,14 @@ const app = express();
 // Trust proxy - required for Replit production deployment
 app.set('trust proxy', 1);
 
+// Set headers to prevent Cross-Origin-Opener-Policy errors with Firebase Auth
+app.use((req, res, next) => {
+  // These headers prevent the COOP console error with Firebase Auth popups
+  res.setHeader('Cross-Origin-Embedder-Policy', 'unsafe-none');
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+  next();
+});
+
 // CORS configuration for authentication
 const corsOrigins = process.env.NODE_ENV === 'production' 
   ? [
