@@ -119,14 +119,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // AI Interview routes
+  app.get('/api/ai/interview/usage', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const isUserAdmin = req.user.email === 'lokashrinav@gmail.com';
+      
+      if (isUserAdmin) {
+        return res.json({ 
+          usageCount: 0, 
+          remaining: 'unlimited',
+          limit: 'unlimited',
+          isAdmin: true 
+        });
+      }
+      
+      const usage = await storage.getAiInterviewUsage(userId);
+      const usageCount = usage?.usageCount || 0;
+      const limit = 3;
+      const remaining = Math.max(0, limit - usageCount);
+      
+      res.json({ 
+        usageCount, 
+        remaining,
+        limit,
+        isAdmin: false 
+      });
+    } catch (error) {
+      console.error("Error fetching AI interview usage:", error);
+      res.status(500).json({ message: "Failed to fetch usage" });
+    }
+  });
+
   app.post('/api/ai/interview', isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.id;
+      const isUserAdmin = req.user.email === 'lokashrinav@gmail.com';
+      
+      // Check usage limit for non-admin users
+      if (!isUserAdmin) {
+        const usage = await storage.getAiInterviewUsage(userId);
+        const usageCount = usage?.usageCount || 0;
+        
+        if (usageCount >= 3) {
+          return res.status(429).json({ 
+            message: "You've reached your AI interview limit (3 per account). Admin users have unlimited access.",
+            usageCount,
+            limit: 3
+          });
+        }
+      }
+      
       const { conductLanguageInterview } = await import('./anthropic');
       
       const result = await conductLanguageInterview(
         req.body.message,
         req.body.context
       );
+      
+      // Increment usage count for non-admin users
+      if (!isUserAdmin) {
+        await storage.incrementAiInterviewUsage(userId);
+      }
       
       // Auto-save interview data to database for hackathon demo
       if (req.body.context?.languageContext?.id && req.body.message) {

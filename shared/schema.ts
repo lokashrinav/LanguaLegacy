@@ -144,6 +144,16 @@ export const lessons = pgTable("lessons", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// AI Interview Usage tracking
+export const aiInterviewUsage = pgTable("ai_interview_usage", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  usageCount: integer("usage_count").default(0).notNull(),
+  lastUsedAt: timestamp("last_used_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // User lesson completion table
 export const userLessonCompletion = pgTable("user_lesson_completion", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -391,3 +401,5 @@ export type LearningGoal = typeof learningGoals.$inferSelect;
 export type InsertLearningGoal = z.infer<typeof insertLearningGoalSchema>;
 export type TaskadeProject = typeof taskadeProjects.$inferSelect;
 export type InsertTaskadeProject = z.infer<typeof insertTaskadeProjectSchema>;
+export type AiInterviewUsage = typeof aiInterviewUsage.$inferSelect;
+export type InsertAiInterviewUsage = typeof aiInterviewUsage.$inferInsert;

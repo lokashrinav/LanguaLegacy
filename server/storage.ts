@@ -11,6 +11,7 @@ import {
   taskProgress,
   learningGoals,
   taskadeProjects,
+  aiInterviewUsage,
   type User,
   type UpsertUser,
   type Language,
@@ -35,6 +36,8 @@ import {
   type InsertLearningGoal,
   type TaskadeProject,
   type InsertTaskadeProject,
+  type AiInterviewUsage,
+  type InsertAiInterviewUsage,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, ilike, and, desc, asc } from "drizzle-orm";
@@ -141,6 +144,10 @@ export interface IStorage {
   // Taskade Project operations
   getTaskadeProject(languageId: string): Promise<TaskadeProject | undefined>;
   createTaskadeProject(project: InsertTaskadeProject): Promise<TaskadeProject>;
+  
+  // AI Interview Usage operations
+  getAiInterviewUsage(userId: string): Promise<AiInterviewUsage | undefined>;
+  incrementAiInterviewUsage(userId: string): Promise<AiInterviewUsage>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -767,6 +774,42 @@ export class DatabaseStorage implements IStorage {
   async createTaskadeProject(project: InsertTaskadeProject): Promise<TaskadeProject> {
     const [created] = await db.insert(taskadeProjects).values(project).returning();
     return created;
+  }
+
+  // AI Interview Usage operations
+  async getAiInterviewUsage(userId: string): Promise<AiInterviewUsage | undefined> {
+    const [usage] = await db
+      .select()
+      .from(aiInterviewUsage)
+      .where(eq(aiInterviewUsage.userId, userId));
+    return usage;
+  }
+
+  async incrementAiInterviewUsage(userId: string): Promise<AiInterviewUsage> {
+    const existing = await this.getAiInterviewUsage(userId);
+    
+    if (existing) {
+      const [updated] = await db
+        .update(aiInterviewUsage)
+        .set({ 
+          usageCount: existing.usageCount + 1,
+          lastUsedAt: new Date(),
+          updatedAt: new Date()
+        })
+        .where(eq(aiInterviewUsage.userId, userId))
+        .returning();
+      return updated;
+    } else {
+      const [created] = await db
+        .insert(aiInterviewUsage)
+        .values({
+          userId,
+          usageCount: 1,
+          lastUsedAt: new Date()
+        })
+        .returning();
+      return created;
+    }
   }
 }
 

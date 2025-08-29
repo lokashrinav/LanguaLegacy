@@ -52,6 +52,7 @@ export default function AIInterviewPage() {
   const [languageContext, setLanguageContext] = useState<LanguageContext | null>(null);
   const [isTyping, setIsTyping] = useState(false);
   const [currentPhase, setCurrentPhase] = useState<'language_detection' | 'contextual_interview' | 'completion'>('language_detection');
+  const [limitReached, setLimitReached] = useState(false);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -61,6 +62,16 @@ export default function AIInterviewPage() {
   // Fetch existing languages for context
   const { data: languages = [] } = useQuery({
     queryKey: ["/api/languages"],
+  });
+  
+  // Fetch AI interview usage
+  const { data: usageData, refetch: refetchUsage } = useQuery({
+    queryKey: ["/api/ai/interview/usage"],
+    onSuccess: (data: any) => {
+      if (!data.isAdmin && data.remaining === 0) {
+        setLimitReached(true);
+      }
+    }
   });
 
   // AI conversation mutation
@@ -100,14 +111,25 @@ export default function AIInterviewPage() {
       }
       
       setIsTyping(false);
+      refetchUsage(); // Update usage count after successful interview
     },
-    onError: (error) => {
+    onError: (error: any) => {
       setIsTyping(false);
-      toast({
-        title: "Interview Error",
-        description: "The AI interviewer encountered an issue. Please try again.",
-        variant: "destructive",
-      });
+      
+      if (error.message?.includes('reached your AI interview limit')) {
+        setLimitReached(true);
+        toast({
+          title: "Interview Limit Reached",
+          description: "You've used all 3 of your AI interviews. Admin users have unlimited access.",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Interview Error",
+          description: error.message || "The AI interviewer encountered an issue. Please try again.",
+          variant: "destructive",
+        });
+      }
     },
   });
 
@@ -157,6 +179,16 @@ What language would you like to document today? I'll check our database and ask 
 
   const handleSendMessage = () => {
     if (!inputText.trim()) return;
+    
+    // Check if limit reached for non-admin users
+    if (limitReached && usageData && !usageData.isAdmin) {
+      toast({
+        title: "Interview Limit Reached",
+        description: "You've used all 3 of your AI interviews. Admin users have unlimited access.",
+        variant: "destructive"
+      });
+      return;
+    }
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -281,6 +313,42 @@ What language would you like to document today? I'll check our database and ask 
     </div>
   );
 
+  const UsageIndicator = () => {
+    if (!usageData) return null;
+    
+    return (
+      <Card className="mb-4 border-l-4" style={{ borderLeftColor: usageData.isAdmin ? 'hsl(120 60% 50%)' : (limitReached ? 'hsl(0 60% 50%)' : 'hsl(45 60% 50%)') }}>
+        <CardContent className="pt-4">
+          <div className="flex items-center justify-between">
+            <div className="text-sm">
+              <div className="font-semibold mb-1">AI Interview Usage</div>
+              <div className="text-muted-foreground">
+                {usageData.isAdmin ? (
+                  <span className="text-green-600">Admin User - Unlimited Interviews</span>
+                ) : (
+                  <>
+                    {limitReached ? (
+                      <span className="text-red-600">
+                        Limit reached: {usageData.usageCount} / {usageData.limit} interviews used
+                      </span>
+                    ) : (
+                      <span>
+                        {usageData.remaining} interview{usageData.remaining !== 1 ? 's' : ''} remaining ({usageData.usageCount} / {usageData.limit} used)
+                      </span>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+            <Badge variant={usageData.isAdmin ? "default" : (limitReached ? "destructive" : "secondary")}>
+              {usageData.isAdmin ? "ADMIN" : `${usageData.remaining} left`}
+            </Badge>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
   const LanguageContextPanel = () => {
     if (!languageContext) return null;
     
@@ -326,6 +394,7 @@ What language would you like to document today? I'll check our database and ask 
           </p>
         </div>
 
+        <UsageIndicator />
         <PhaseIndicator />
         <LanguageContextPanel />
 
