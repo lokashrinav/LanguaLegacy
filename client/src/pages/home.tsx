@@ -57,7 +57,7 @@ export default function Home() {
             <Card className="bg-white" data-testid="stat-lessons">
               <CardContent className="pt-6">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-accent">
+                  <div className="text-2xl font-bold text-primary">
                     {statsLoading ? '...' : userStats?.lessonsCompleted || 0}
                   </div>
                   <div className="text-sm text-muted-foreground">Lessons Completed</div>
@@ -79,7 +79,7 @@ export default function Home() {
             <Card className="bg-white" data-testid="stat-languages">
               <CardContent className="pt-6">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-accent">
+                  <div className="text-2xl font-bold text-primary">
                     {statsLoading ? '...' : userStats?.languages?.length || 0}
                   </div>
                   <div className="text-sm text-muted-foreground">Languages Learning</div>
