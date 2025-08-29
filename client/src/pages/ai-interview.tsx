@@ -116,11 +116,11 @@ export default function AIInterviewPage() {
     onError: (error: any) => {
       setIsTyping(false);
       
-      if (error.message?.includes('reached your AI interview limit')) {
+      if (error.message?.includes('reached your question limit')) {
         setLimitReached(true);
         toast({
-          title: "Interview Limit Reached",
-          description: "You've used all 3 of your AI interviews. Admin users have unlimited access.",
+          title: "Question Limit Reached",
+          description: "You've used all 3 of your questions. Admin users have unlimited access.",
           variant: "destructive"
         });
       } else {
@@ -183,8 +183,8 @@ What language would you like to document today? I'll check our database and ask 
     // Check if limit reached for non-admin users
     if (limitReached && usageData && !usageData.isAdmin) {
       toast({
-        title: "Interview Limit Reached",
-        description: "You've used all 3 of your AI interviews. Admin users have unlimited access.",
+        title: "Question Limit Reached",
+        description: "You've used all 3 of your questions. Admin users have unlimited access.",
         variant: "destructive"
       });
       return;
@@ -321,19 +321,19 @@ What language would you like to document today? I'll check our database and ask 
         <CardContent className="pt-4">
           <div className="flex items-center justify-between">
             <div className="text-sm">
-              <div className="font-semibold mb-1">AI Interview Usage</div>
+              <div className="font-semibold mb-1">AI Question Limit</div>
               <div className="text-muted-foreground">
                 {usageData.isAdmin ? (
-                  <span className="text-green-600">Admin User - Unlimited Interviews</span>
+                  <span className="text-green-600">Admin User - Unlimited Questions</span>
                 ) : (
                   <>
                     {limitReached ? (
                       <span className="text-red-600">
-                        Limit reached: {usageData.usageCount} / {usageData.limit} interviews used
+                        Limit reached: {usageData.usageCount} / {usageData.limit} questions used
                       </span>
                     ) : (
                       <span>
-                        {usageData.remaining} interview{usageData.remaining !== 1 ? 's' : ''} remaining ({usageData.usageCount} / {usageData.limit} used)
+                        {usageData.remaining} question{usageData.remaining !== 1 ? 's' : ''} remaining ({usageData.usageCount} / {usageData.limit} used)
                       </span>
                     )}
                   </>

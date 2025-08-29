@@ -162,7 +162,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         if (usageCount >= 3) {
           return res.status(429).json({ 
-            message: "You've reached your AI interview limit (3 per account). Admin users have unlimited access.",
+            message: "You've reached your question limit (3 questions per account). Admin users have unlimited access.",
             usageCount,
             limit: 3
           });
