@@ -141,8 +141,13 @@ Generate exactly ${count} different real endangered languages in this format. On
           }
 
           // Create the language
-          await storage.createLanguage(langData);
+          const createdLanguage = await storage.createLanguage(langData);
           console.log(`Created language: ${langData.name}`);
+          
+          // Create basic lessons for this language
+          await this.createBasicLessons(createdLanguage.id, langData.name);
+          console.log(`Created lessons for: ${langData.name}`);
+          
           results.created++;
         } catch (error) {
           const errorMsg = `Failed to create ${langData.name}: ${error instanceof Error ? error.message : 'Unknown error'}`;
@@ -159,5 +164,175 @@ Generate exactly ${count} different real endangered languages in this format. On
     }
 
     return results;
+  }
+
+  private async createBasicLessons(languageId: string, languageName: string): Promise<void> {
+    const basicLessons = [
+      {
+        title: "Basic Greetings",
+        description: `Learn essential greetings and introductions in ${languageName}`,
+        level: "beginner",
+        order: 1,
+        content: {
+          phrases: [
+            {
+              original: "Hello",
+              phonetic: "həˈloʊ",
+              translation: "A greeting used when meeting someone",
+              context: "Used in most social situations"
+            },
+            {
+              original: "Good morning",
+              phonetic: "ɡʊd ˈmɔːrnɪŋ",
+              translation: "Morning greeting",
+              context: "Used before noon"
+            },
+            {
+              original: "Thank you",
+              phonetic: "θæŋk juː",
+              translation: "Expression of gratitude",
+              context: "Used to show appreciation"
+            }
+          ],
+          duration: 15,
+          culturalContext: `These greetings are fundamental to ${languageName} culture and show respect for others.`
+        }
+      },
+      {
+        title: "Family and Relationships",
+        description: `Discover words for family members and relationships in ${languageName}`,
+        level: "beginner",
+        order: 2,
+        content: {
+          phrases: [
+            {
+              original: "Mother",
+              phonetic: "ˈmʌðər",
+              translation: "Female parent",
+              context: "Family relationship"
+            },
+            {
+              original: "Father",
+              phonetic: "ˈfɑːðər",
+              translation: "Male parent",
+              context: "Family relationship"
+            },
+            {
+              original: "Child",
+              phonetic: "tʃaɪld",
+              translation: "Young person",
+              context: "Family relationship"
+            }
+          ],
+          duration: 20,
+          culturalContext: `Family structures and relationships hold special significance in ${languageName} culture.`
+        }
+      },
+      {
+        title: "Numbers and Counting",
+        description: `Learn the number system in ${languageName}`,
+        level: "beginner",
+        order: 3,
+        content: {
+          phrases: [
+            {
+              original: "One",
+              phonetic: "wʌn",
+              translation: "The number 1",
+              context: "Basic counting"
+            },
+            {
+              original: "Two",
+              phonetic: "tuː",
+              translation: "The number 2",
+              context: "Basic counting"
+            },
+            {
+              original: "Three",
+              phonetic: "θriː",
+              translation: "The number 3",
+              context: "Basic counting"
+            }
+          ],
+          duration: 18,
+          culturalContext: `Traditional counting systems often reflect cultural values and mathematical concepts.`
+        }
+      },
+      {
+        title: "Colors and Nature",
+        description: `Explore colors and natural elements in ${languageName}`,
+        level: "intermediate",
+        order: 4,
+        content: {
+          phrases: [
+            {
+              original: "Red",
+              phonetic: "red",
+              translation: "The color red",
+              context: "Describing objects"
+            },
+            {
+              original: "Blue",
+              phonetic: "bluː",
+              translation: "The color blue",
+              context: "Describing objects"
+            },
+            {
+              original: "Green",
+              phonetic: "ɡriːn",
+              translation: "The color green",
+              context: "Describing objects"
+            }
+          ],
+          duration: 25,
+          culturalContext: `Colors often have cultural and spiritual significance in indigenous languages.`
+        }
+      },
+      {
+        title: "Daily Activities",
+        description: `Learn words for common daily activities in ${languageName}`,
+        level: "intermediate",
+        order: 5,
+        content: {
+          phrases: [
+            {
+              original: "To eat",
+              phonetic: "tuː iːt",
+              translation: "Consuming food",
+              context: "Daily activity"
+            },
+            {
+              original: "To sleep",
+              phonetic: "tuː sliːp",
+              translation: "Resting at night",
+              context: "Daily activity"
+            },
+            {
+              original: "To work",
+              phonetic: "tuː wɜːrk",
+              translation: "Performing tasks",
+              context: "Daily activity"
+            }
+          ],
+          duration: 22,
+          culturalContext: `Daily activities reflect the lifestyle and values of the community.`
+        }
+      }
+    ];
+
+    for (const lessonData of basicLessons) {
+      try {
+        await storage.createLesson({
+          languageId,
+          title: lessonData.title,
+          description: lessonData.description,
+          level: lessonData.level,
+          order: lessonData.order,
+          content: lessonData.content
+        });
+      } catch (error) {
+        console.error(`Failed to create lesson "${lessonData.title}" for ${languageName}:`, error);
+      }
+    }
   }
 }

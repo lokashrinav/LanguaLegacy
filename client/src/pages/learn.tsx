@@ -46,12 +46,28 @@ export default function Learn() {
   });
 
   const { data: lessons } = useQuery({
-    queryKey: ["/api/lessons", { languageId: selectedLanguageId }],
+    queryKey: ["/api/lessons", selectedLanguageId],
+    queryFn: async () => {
+      if (!selectedLanguageId) return [];
+      const response = await fetch(`/api/lessons?languageId=${selectedLanguageId}`, {
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to fetch lessons');
+      return response.json();
+    },
     enabled: !!selectedLanguageId && isAuthenticated,
   });
 
   const { data: completions } = useQuery({
-    queryKey: ["/api/lesson-completions", { languageId: selectedLanguageId }],
+    queryKey: ["/api/lesson-completions", selectedLanguageId],
+    queryFn: async () => {
+      if (!selectedLanguageId) return [];
+      const response = await fetch(`/api/lesson-completions?languageId=${selectedLanguageId}`, {
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to fetch completions');
+      return response.json();
+    },
     enabled: !!selectedLanguageId && isAuthenticated,
   });
 
@@ -134,7 +150,7 @@ export default function Learn() {
     setShowQuiz(false);
     
     // Initialize progress for this language if it doesn't exist
-    const existingProgress = progress?.find((p: any) => p.languageId === languageId);
+    const existingProgress = Array.isArray(progress) ? progress.find((p: any) => p.languageId === languageId) : null;
     if (!existingProgress) {
       updateProgressMutation.mutate({
         languageId,
@@ -165,8 +181,8 @@ export default function Learn() {
     setShowQuiz(false);
   };
 
-  const selectedLanguage = languages?.find((l: any) => l.id === selectedLanguageId);
-  const currentProgress = progress?.find((p: any) => p.languageId === selectedLanguageId);
+  const selectedLanguage = Array.isArray(languages) ? languages.find((l: any) => l.id === selectedLanguageId) : null;
+  const currentProgress = Array.isArray(progress) ? progress.find((p: any) => p.languageId === selectedLanguageId) : null;
 
   if (authLoading) {
     return (
@@ -203,11 +219,11 @@ export default function Learn() {
                   <SelectValue placeholder="Select a language..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {languages?.map((language: any) => (
+                  {Array.isArray(languages) ? languages.map((language: any) => (
                     <SelectItem key={language.id} value={language.id}>
                       {language.name} - {language.region}
                     </SelectItem>
-                  ))}
+                  )) : null}
                 </SelectContent>
               </Select>
               
