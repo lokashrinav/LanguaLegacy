@@ -5,6 +5,9 @@ import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 
+// Trust proxy - required for Replit production deployment
+app.set('trust proxy', 1);
+
 // CORS configuration for authentication
 app.use(cors({
   credentials: true,

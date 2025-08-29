@@ -35,15 +35,15 @@ export function setupAuth(app: Express) {
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET || "your-secret-key-here",
     resave: false,
-    saveUninitialized: true, // Changed to true to help with session creation
+    saveUninitialized: false,
     store: sessionStore,
     cookie: {
       httpOnly: true,
-      sameSite: "lax", // Changed back to lax for better compatibility
-      secure: false, // Changed to false - Replit handles HTTPS termination
+      sameSite: "lax",
+      secure: isProduction, // Use secure cookies in production since we trust the proxy
       maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
     },
-    proxy: true, // Always trust proxy since Replit handles HTTPS
+    // proxy setting removed - we set it globally with app.set('trust proxy', 1)
   };
 
   app.use(session(sessionSettings));

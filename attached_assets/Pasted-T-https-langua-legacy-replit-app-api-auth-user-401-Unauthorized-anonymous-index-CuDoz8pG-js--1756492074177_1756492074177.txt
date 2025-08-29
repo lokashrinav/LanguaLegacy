@@ -1,0 +1,55 @@
+T https://langua-legacy.replit.app/api/auth/user 401 (Unauthorized)
+(anonymous) @ index-CuDoz8pG.js:48
+o @ index-CuDoz8pG.js:48
+w @ index-CuDoz8pG.js:48
+start @ index-CuDoz8pG.js:48
+fetch @ index-CuDoz8pG.js:48
+sl @ index-CuDoz8pG.js:48
+onSubscribe @ index-CuDoz8pG.js:48
+subscribe @ index-CuDoz8pG.js:48
+(anonymous) @ index-CuDoz8pG.js:48
+KS @ index-CuDoz8pG.js:38
+sf @ index-CuDoz8pG.js:40
+Mo @ index-CuDoz8pG.js:40
+_y @ index-CuDoz8pG.js:40
+pi @ index-CuDoz8pG.js:38
+LM @ index-CuDoz8pG.js:40
+bi @ index-CuDoz8pG.js:40
+S_ @ index-CuDoz8pG.js:40
+N @ index-CuDoz8pG.js:25
+M @ index-CuDoz8pG.js:25Understand this error
+index-CuDoz8pG.js:1639 Cross-Origin-Opener-Policy policy would block the window.close call.
+close @ index-CuDoz8pG.js:1639
+cleanUp @ index-CuDoz8pG.js:1534
+unregisterAndCleanUp @ index-CuDoz8pG.js:1519
+resolve @ index-CuDoz8pG.js:1519
+onAuthEvent @ index-CuDoz8pG.js:1519
+await in onAuthEvent
+sendToConsumer @ index-CuDoz8pG.js:1564
+(anonymous) @ index-CuDoz8pG.js:1564
+onEvent @ index-CuDoz8pG.js:1564
+(anonymous) @ index-CuDoz8pG.js:1669
+Tm @ cb=gapi.loaded_0?le=scs:195
+(anonymous) @ cb=gapi.loaded_0?le=scs:195
+hl @ cb=gapi.loaded_0?le=scs:174
+ql @ cb=gapi.loaded_0?le=scs:174
+Lk @ cb=gapi.loaded_0?le=scs:175
+Rk.sI @ cb=gapi.loaded_0?le=scs:168Understand this error
+index-CuDoz8pG.js:1639 Cross-Origin-Opener-Policy policy would block the window.close call.
+close @ index-CuDoz8pG.js:1639
+cleanUp @ index-CuDoz8pG.js:1534
+unregisterAndCleanUp @ index-CuDoz8pG.js:1519
+resolve @ index-CuDoz8pG.js:1519
+onAuthEvent @ index-CuDoz8pG.js:1519
+await in onAuthEvent
+sendToConsumer @ index-CuDoz8pG.js:1564
+(anonymous) @ index-CuDoz8pG.js:1564
+onEvent @ index-CuDoz8pG.js:1564
+(anonymous) @ index-CuDoz8pG.js:1669
+Tm @ cb=gapi.loaded_0?le=scs:195
+(anonymous) @ cb=gapi.loaded_0?le=scs:195
+hl @ cb=gapi.loaded_0?le=scs:174
+ql @ cb=gapi.loaded_0?le=scs:174
+Lk @ cb=gapi.loaded_0?le=scs:175
+Rk.sI @ cb=gapi.loaded_0?le=scs:168Understand this error
+index-CuDoz8pG.js:48  POST https://langua-legacy.replit.app/api/auth/google 500 (Internal Server Error)
