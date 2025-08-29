@@ -19,11 +19,13 @@ export class LanguageDataSeeder {
   async generateEndangeredLanguagesData(request: LanguageDataRequest = {}): Promise<InsertLanguage[]> {
     const { count = 50, regions = [], threatLevels = [] } = request;
     
-    const prompt = `Generate comprehensive data for ${count} real endangered languages. For each language, provide accurate information that matches this exact JSON schema:
+    const prompt = `Generate comprehensive data for ${count} real endangered languages. For each language, provide accurate information that matches this exact JSON schema with EVERY possible detail:
 
 {
+  // BASIC IDENTIFICATION
   "name": "string (official language name)",
   "nativeName": "string (how speakers call their language)",
+  "alternativeNames": "string (other names, dialects, historical names)",
   "region": "string (continent: Africa, Asia, Europe, North America, South America, Oceania)",
   "country": "string (primary country)",
   "speakers": "number (current speaker count, can be 0 for extinct)",
@@ -31,19 +33,106 @@ export class LanguageDataSeeder {
   "family": "string (language family)",
   "iso639Code": "string (3-letter ISO code if available, or null)",
   "writingSystem": "string (Latin|Cyrillic|Arabic|Chinese|Japanese|Indian|Other|None)",
-  "description": "string (2-3 sentences about the language)",
-  "culturalSignificance": "string (cultural importance and traditions)",
-  "geographicDistribution": "string (where it's spoken geographically)",
-  "dialectVariations": "string (major dialects if any)",
-  "phonology": "string (notable sound system features)",
-  "grammar": "string (grammatical structure highlights)",
-  "vocabulary": "string (interesting vocabulary characteristics)",
-  "historicalContext": "string (language history and changes)",
-  "currentStatus": "string (current preservation efforts)",
-  "challenges": "string (threats and preservation challenges)",
-  "resources": "string (existing documentation or learning materials)",
-  "contactLanguages": "string (languages it interacts with)",
-  "revitalizationEfforts": "string (ongoing revival programs)"
+  "description": "string (comprehensive overview)",
+
+  // LINGUISTIC FEATURES - DETAILED
+  "phonology": "string (complete sound system: consonants, vowels, tones, stress)",
+  "morphology": "string (word formation, inflection, derivation patterns)",
+  "syntax": "string (sentence structure, word order, clause types)",
+  "grammar": "string (grammatical features, case systems, verb aspects)",
+  "vocabulary": "string (lexical characteristics, borrowings, semantic fields)",
+  "semantics": "string (meaning systems, metaphors, cultural concepts)",
+  "pragmatics": "string (language use in context, politeness, discourse)",
+  "dialectVariations": "string (regional/social varieties and differences)",
+  "uniqueFeatures": "string (rare grammatical phenomena, unusual characteristics)",
+  "comparativeLinguistics": "string (similarities/differences with related languages)",
+
+  // CULTURAL & SOCIAL CONTEXT
+  "culturalSignificance": "string (role in identity, ceremonies, traditions)",
+  "traditionalKnowledge": "string (encoded ecological, medical, agricultural knowledge)",
+  "oralTraditions": "string (myths, legends, storytelling traditions)",
+  "religiousSpiritual": "string (sacred uses, prayers, spiritual concepts)",
+  "socialStructure": "string (kinship terms, social hierarchy reflected in language)",
+  "culturalProducts": "string (literature, songs, poetry, folklore in the language)",
+  "ceremonies": "string (ritual uses, ceremonial language, taboos)",
+
+  // HISTORICAL CONTEXT
+  "historicalContext": "string (language origins, migrations, historical changes)",
+  "colonialImpact": "string (effects of colonization, suppression, policy changes)",
+  "firstDocumentation": "string (earliest written records, who documented it)",
+  "historicalSpeakerNumbers": "string (population changes over time)",
+  "languageShift": "string (factors causing decline, when shift began)",
+
+  // GEOGRAPHIC & DEMOGRAPHIC
+  "geographicDistribution": "string (exact locations, settlements, territories)",
+  "speakerDemographics": "string (age distribution, urban vs rural, gender patterns)",
+  "migrationPatterns": "string (diaspora communities, resettlement)",
+  "environmentalContext": "string (ecosystem, climate, geographic features)",
+
+  // SOCIOLINGUISTIC FACTORS
+  "languageAttitudes": "string (prestige, stigma, community pride, external perceptions)",
+  "multilingualism": "string (other languages speakers know, code-switching patterns)",
+  "diglossia": "string (formal vs informal use, domain-specific usage)",
+  "intergenerationalTransmission": "string (how language passes to children)",
+  "urbanRuralDifferences": "string (usage patterns in different settings)",
+
+  // CURRENT STATUS & DOCUMENTATION
+  "currentStatus": "string (active use, domains of use, vitality)",
+  "documentationLevel": "string (quality and quantity of linguistic documentation)",
+  "audioArchives": "string (existing recordings, oral history projects)",
+  "videoDocumentation": "string (visual documentation, sign language if applicable)",
+  "dictionaryStatus": "string (available dictionaries, lexicographic work)",
+  "grammarDocumentation": "string (grammatical descriptions, linguistic analyses)",
+  "corpusLinguistics": "string (text collections, computational resources)",
+
+  // EDUCATION & LITERACY
+  "educationalPrograms": "string (school programs, language immersion, curricula)",
+  "literacyRates": "string (reading/writing abilities in the language)",
+  "teachingMaterials": "string (textbooks, learning resources, pedagogical tools)",
+  "universityPrograms": "string (academic study, linguistics departments)",
+
+  // TECHNOLOGY & MEDIA
+  "digitalPresence": "string (websites, apps, social media use)",
+  "mediaProduction": "string (radio, TV, newspapers, films in the language)",
+  "technologicalAdaptation": "string (unicode support, fonts, keyboards)",
+  "onlineResources": "string (digital dictionaries, learning platforms)",
+
+  // LEGAL & POLITICAL STATUS
+  "officialStatus": "string (government recognition, legal protections)",
+  "languageRights": "string (constitutional recognition, minority language rights)",
+  "policySupport": "string (government programs, funding, legislation)",
+  "internationalRecognition": "string (UNESCO status, international organization support)",
+
+  // RESEARCH & ACADEMIC STUDY
+  "keyResearchers": "string (notable linguists, anthropologists studying the language)",
+  "researchInstitutions": "string (universities, institutes conducting research)",
+  "academicPublications": "string (major studies, dissertations, linguistic papers)",
+  "fieldworkHistory": "string (when and how linguistic fieldwork was conducted)",
+
+  // CHALLENGES & THREATS
+  "challenges": "string (specific threats: urbanization, education policy, globalization)",
+  "languageShiftFactors": "string (economic, social, political pressures)",
+  "endangermentFactors": "string (what caused decline, ongoing threats)",
+  "competingLanguages": "string (dominant languages replacing it)",
+
+  // PRESERVATION & REVITALIZATION
+  "revitalizationEfforts": "string (community programs, revival initiatives)",
+  "communitySupport": "string (grassroots efforts, elder involvement)",
+  "governmentSupport": "string (official preservation programs, funding)",
+  "internationalSupport": "string (NGO involvement, international funding)",
+  "successStories": "string (positive developments, increasing usage)",
+  "revitalizationChallenges": "string (obstacles to preservation efforts)",
+
+  // COMMUNITY & CONTACT
+  "contactLanguages": "string (languages in contact, borrowing patterns)",
+  "communityStructure": "string (speaker communities, tribal organization)",
+  "culturalPractices": "string (customs maintained through the language)",
+  "economicFactors": "string (role in traditional economy, modern economic pressures)",
+
+  // FUTURE PROSPECTS
+  "futureOutlook": "string (predictions for language survival, trends)",
+  "youthInvolvement": "string (young people's engagement, learning initiatives)",
+  "emergingOpportunities": "string (new contexts for use, digital opportunities)"
 }
 
 Requirements:
