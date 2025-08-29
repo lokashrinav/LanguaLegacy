@@ -81,7 +81,14 @@ export function setupAuth(app: Express) {
           username: user.username || undefined,
         };
         
-        res.json(req.user);
+        // Explicitly save the session before responding
+        req.session.save((err) => {
+          if (err) {
+            console.error("Session save error:", err);
+            return res.status(500).json({ error: "Failed to save session" });
+          }
+          res.json(req.user);
+        });
       } catch (error) {
         console.error('Replit auth error:', error);
         res.status(500).json({ error: 'Failed to authenticate with Replit' });
@@ -134,7 +141,14 @@ export function setupAuth(app: Express) {
         profileImageUrl: user.profileImageUrl || undefined,
       };
 
-      res.status(201).json(req.user);
+      // Explicitly save the session before responding
+      req.session.save((err) => {
+        if (err) {
+          console.error("Session save error:", err);
+          return res.status(500).json({ message: "Failed to save session" });
+        }
+        res.status(201).json(req.user);
+      });
     } catch (error) {
       console.error("Registration error:", error);
       res.status(500).json({ message: "Failed to register user" });
@@ -177,7 +191,14 @@ export function setupAuth(app: Express) {
         profileImageUrl: user.profileImageUrl || undefined,
       };
 
-      res.json(req.user);
+      // Explicitly save the session before responding
+      req.session.save((err) => {
+        if (err) {
+          console.error("Session save error:", err);
+          return res.status(500).json({ message: "Failed to save session" });
+        }
+        res.json(req.user);
+      });
     } catch (error) {
       console.error("Login error:", error);
       res.status(500).json({ message: "Failed to login" });
@@ -256,7 +277,14 @@ export function setupAuth(app: Express) {
         profileImageUrl: user.profileImageUrl || undefined,
       };
 
-      res.json(req.user);
+      // Explicitly save the session before responding
+      req.session.save((err) => {
+        if (err) {
+          console.error("Session save error:", err);
+          return res.status(500).json({ error: "Failed to save session" });
+        }
+        res.json(req.user);
+      });
     } catch (error) {
       console.error("Google auth error:", error);
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
