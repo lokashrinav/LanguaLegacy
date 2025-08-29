@@ -46,20 +46,34 @@ export function handleGoogleRedirect() {
     return Promise.resolve(null);
   }
   
-  console.log("Checking for Google redirect result...");
+  console.log("🔍 Checking for Google redirect result...", {
+    currentUrl: window.location.href,
+    hasQueryParams: window.location.search.length > 0,
+    hasHash: window.location.hash.length > 0
+  });
+  
   return getRedirectResult(auth).then(result => {
     if (result) {
       console.log("✅ Google redirect result found:", { 
         user: !!result.user, 
         email: result.user?.email,
-        uid: result.user?.uid 
+        uid: result.user?.uid,
+        providerId: result.providerId,
+        operationType: result.operationType
       });
     } else {
-      console.log("ℹ️ No redirect result found (this is normal on regular page loads)");
+      console.log("ℹ️ No redirect result found", {
+        authCurrentUser: !!auth.currentUser,
+        userEmail: auth.currentUser?.email
+      });
     }
     return result;
   }).catch(error => {
-    console.error("❌ Error getting redirect result:", error);
+    console.error("❌ Error getting redirect result:", {
+      error: error.message,
+      code: error.code,
+      details: error
+    });
     throw error;
   });
 }
