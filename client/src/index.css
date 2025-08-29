@@ -164,7 +164,66 @@
   }
   
   .animate-fade-in {
-    animation: fadeIn 0.3s ease-out;
+    animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  
+  /* Tab content transitions */
+  [role="tabpanel"] {
+    animation: tabFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  
+  @keyframes tabFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(8px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+  
+  /* Tab trigger active state */
+  [role="tab"][data-state="active"] {
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  
+  /* Smooth card transitions */
+  .study-group-card {
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  
+  .study-group-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(139, 105, 73, 0.2);
+  }
+  
+  /* Tab list smooth transitions */
+  [role="tablist"] {
+    position: relative;
+  }
+  
+  [role="tablist"] button {
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  
+  [role="tablist"] button[data-state="active"] {
+    background: var(--primary);
+    color: var(--primary-foreground);
+  }
+  
+  /* Smooth loading states */
+  .loading-fade {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
   }
   
   /* Route transition wrapper */

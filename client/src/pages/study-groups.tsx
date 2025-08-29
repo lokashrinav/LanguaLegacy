@@ -153,7 +153,7 @@ export default function StudyGroups() {
     const isUserMember = myGroups.some(g => g.id === group.id);
 
     return (
-      <Card className="hover:shadow-lg transition-shadow" data-testid={`card-group-${group.id}`}>
+      <Card className="study-group-card" data-testid={`card-group-${group.id}`}>
         <CardHeader>
           <div className="flex justify-between items-start">
             <div>
@@ -378,7 +378,7 @@ export default function StudyGroups() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="discover" className="space-y-4">
+        <TabsContent value="discover" className="space-y-4 animate-fade-in">
           <div className="flex gap-4 mb-6">
             <Input
               placeholder="Search study groups..."
@@ -390,7 +390,7 @@ export default function StudyGroups() {
           </div>
 
           {loadingPublic ? (
-            <div className="text-center py-8">Loading study groups...</div>
+            <div className="text-center py-8 loading-fade">Loading study groups...</div>
           ) : filteredPublicGroups.length === 0 ? (
             <Card className="py-12 text-center">
               <CardContent>
@@ -412,7 +412,7 @@ export default function StudyGroups() {
           )}
         </TabsContent>
 
-        <TabsContent value="my-groups" className="space-y-4">
+        <TabsContent value="my-groups" className="space-y-4 animate-fade-in">
           {!user ? (
             <Card className="py-12 text-center">
               <CardContent>
@@ -424,7 +424,7 @@ export default function StudyGroups() {
               </CardContent>
             </Card>
           ) : loadingMyGroups ? (
-            <div className="text-center py-8">Loading your groups...</div>
+            <div className="text-center py-8 loading-fade">Loading your groups...</div>
           ) : myGroups.length === 0 ? (
             <Card className="py-12 text-center">
               <CardContent>
