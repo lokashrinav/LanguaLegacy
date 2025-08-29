@@ -166,7 +166,7 @@ Generate exactly ${count} different real endangered languages in this format. On
     return results;
   }
 
-  private async createAIGeneratedCourse(languageId: string, language: any): Promise<void> {
+  async createAIGeneratedCourse(languageId: string, language: any): Promise<void> {
     console.log(`=== GENERATING AI COURSE FOR ${language.name} ===`);
     
     const prompt = `Create a comprehensive language learning course for "${language.name}" (native name: "${language.nativeName || language.name}").

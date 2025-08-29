@@ -51,6 +51,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const languageData = insertLanguageSchema.parse(req.body);
       const language = await storage.createLanguage(languageData);
+      
+      // Automatically create AI-generated course for this language
+      try {
+        const { LanguageDataSeeder } = await import('./dataSeeder');
+        const seeder = new LanguageDataSeeder();
+        await seeder.createAIGeneratedCourse(language.id, language);
+        console.log(`Auto-created AI course for manually added language: ${language.name}`);
+      } catch (courseError) {
+        console.error(`Failed to create course for ${language.name}:`, courseError);
+        // Don't fail the language creation if course generation fails
+      }
+      
       res.json(language);
     } catch (error) {
       console.error("Error creating language:", error);
