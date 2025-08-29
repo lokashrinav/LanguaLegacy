@@ -285,17 +285,26 @@ export function setupAuth(app: Express) {
       }
 
       // Verify the Firebase ID token
+      console.log("[Google Auth] Starting Firebase verification");
       const admin = await import("firebase-admin");
+      
       if (!admin.apps.length) {
+        console.log("[Google Auth] Initializing Firebase Admin SDK");
         const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT;
+        
         if (!serviceAccountJson) {
+          console.error("[Google Auth] FIREBASE_SERVICE_ACCOUNT env var not found");
           throw new Error("FIREBASE_SERVICE_ACCOUNT not found");
         }
+        
+        console.log("[Google Auth] Service account JSON length:", serviceAccountJson.length);
         
         let serviceAccount;
         try {
           serviceAccount = JSON.parse(serviceAccountJson);
+          console.log("[Google Auth] Service account parsed, project_id:", serviceAccount.project_id);
         } catch (parseError) {
+          console.error("[Google Auth] Failed to parse service account JSON:", parseError);
           throw new Error("Invalid JSON in FIREBASE_SERVICE_ACCOUNT");
         }
         
@@ -303,9 +312,14 @@ export function setupAuth(app: Express) {
           credential: admin.credential.cert(serviceAccount),
           projectId: serviceAccount.project_id,
         });
+        console.log("[Google Auth] Firebase Admin SDK initialized");
+      } else {
+        console.log("[Google Auth] Firebase Admin SDK already initialized");
       }
 
+      console.log("[Google Auth] Verifying ID token...");
       const decoded = await admin.auth().verifyIdToken(idToken);
+      console.log("[Google Auth] Token verified for uid:", decoded.uid);
       const { uid, email, name, picture } = decoded;
       
       if (!email || !decoded.email_verified) {
@@ -367,11 +381,16 @@ export function setupAuth(app: Express) {
         });
       });
     } catch (error) {
-      console.error("Google auth error:", error);
+      console.error("[Google Auth] Full error details:", error);
+      console.error("[Google Auth] Error stack:", error instanceof Error ? error.stack : "No stack trace");
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      
+      // Temporarily show error details in production for debugging
       res.status(500).json({ 
         error: "Failed to login with Google",
-        details: process.env.NODE_ENV === "development" ? errorMessage : undefined
+        details: errorMessage,
+        env: process.env.NODE_ENV,
+        hasServiceAccount: !!process.env.FIREBASE_SERVICE_ACCOUNT
       });
     }
   });
