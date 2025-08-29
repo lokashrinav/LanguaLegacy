@@ -10,6 +10,7 @@ import {
   groupTasks,
   taskProgress,
   learningGoals,
+  taskadeProjects,
   type User,
   type UpsertUser,
   type Language,
@@ -32,6 +33,8 @@ import {
   type InsertTaskProgress,
   type LearningGoal,
   type InsertLearningGoal,
+  type TaskadeProject,
+  type InsertTaskadeProject,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, ilike, and, desc, asc } from "drizzle-orm";
@@ -134,6 +137,10 @@ export interface IStorage {
   createLearningGoal(goal: InsertLearningGoal): Promise<LearningGoal>;
   updateLearningGoal(id: string, updates: Partial<LearningGoal>): Promise<LearningGoal>;
   deleteLearningGoal(id: string): Promise<void>;
+  
+  // Taskade Project operations
+  getTaskadeProject(languageId: string): Promise<TaskadeProject | undefined>;
+  createTaskadeProject(project: InsertTaskadeProject): Promise<TaskadeProject>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -746,6 +753,20 @@ export class DatabaseStorage implements IStorage {
 
   async deleteLearningGoal(id: string): Promise<void> {
     await db.delete(learningGoals).where(eq(learningGoals.id, id));
+  }
+
+  // Taskade Project operations
+  async getTaskadeProject(languageId: string): Promise<TaskadeProject | undefined> {
+    const [project] = await db
+      .select()
+      .from(taskadeProjects)
+      .where(eq(taskadeProjects.languageId, languageId));
+    return project;
+  }
+
+  async createTaskadeProject(project: InsertTaskadeProject): Promise<TaskadeProject> {
+    const [created] = await db.insert(taskadeProjects).values(project).returning();
+    return created;
   }
 }
 

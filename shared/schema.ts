@@ -255,6 +255,17 @@ export const insertUserLessonCompletionSchema = createInsertSchema(userLessonCom
   createdAt: true,
 });
 
+// Taskade Integration table
+export const taskadeProjects = pgTable("taskade_projects", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  languageId: varchar("language_id").notNull().references(() => languages.id, { onDelete: "cascade" }),
+  taskadeProjectId: varchar("taskade_project_id").notNull(),
+  taskadeProjectUrl: varchar("taskade_project_url").notNull(),
+  createdBy: varchar("created_by").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Study Groups for collaborative learning
 export const studyGroups = pgTable("study_groups", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -349,6 +360,12 @@ export const insertLearningGoalSchema = createInsertSchema(learningGoals).omit({
   currentValue: true,
 });
 
+export const insertTaskadeProjectSchema = createInsertSchema(taskadeProjects).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -372,3 +389,5 @@ export type TaskProgress = typeof taskProgress.$inferSelect;
 export type InsertTaskProgress = z.infer<typeof insertTaskProgressSchema>;
 export type LearningGoal = typeof learningGoals.$inferSelect;
 export type InsertLearningGoal = z.infer<typeof insertLearningGoalSchema>;
+export type TaskadeProject = typeof taskadeProjects.$inferSelect;
+export type InsertTaskadeProject = z.infer<typeof insertTaskadeProjectSchema>;

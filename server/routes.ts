@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./auth";
+import { createLanguagePreservationProject } from "./taskade";
 import {
   insertLanguageSchema,
   insertContributionSchema,
@@ -13,6 +14,7 @@ import {
   insertGroupTaskSchema,
   insertTaskProgressSchema,
   insertLearningGoalSchema,
+  insertTaskadeProjectSchema,
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -705,6 +707,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting learning goal:", error);
       res.status(500).json({ message: "Failed to delete learning goal" });
+    }
+  });
+
+  // Taskade Project routes
+  app.get('/api/languages/:languageId/taskade-project', async (req, res) => {
+    try {
+      const project = await storage.getTaskadeProject(req.params.languageId);
+      res.json(project || null);
+    } catch (error) {
+      console.error("Error fetching Taskade project:", error);
+      res.status(500).json({ message: "Failed to fetch Taskade project" });
+    }
+  });
+
+  app.post('/api/languages/:languageId/taskade-project', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const languageId = req.params.languageId;
+      
+      // Check if project already exists
+      const existingProject = await storage.getTaskadeProject(languageId);
+      if (existingProject) {
+        return res.status(400).json({ message: "Taskade project already exists for this language" });
+      }
+      
+      // Get language details
+      const language = await storage.getLanguageById(languageId);
+      if (!language) {
+        return res.status(404).json({ message: "Language not found" });
+      }
+      
+      // Create Taskade project
+      const { projectId, projectUrl } = await createLanguagePreservationProject(
+        language.name,
+        languageId,
+        language.region,
+        language.threatLevel
+      );
+      
+      // Save to database
+      const projectData = insertTaskadeProjectSchema.parse({
+        languageId,
+        taskadeProjectId: projectId,
+        taskadeProjectUrl: projectUrl,
+        createdBy: userId,
+      });
+      
+      const project = await storage.createTaskadeProject(projectData);
+      res.json(project);
+    } catch (error) {
+      console.error("Error creating Taskade project:", error);
+      res.status(500).json({ message: "Failed to create Taskade project" });
     }
   });
 

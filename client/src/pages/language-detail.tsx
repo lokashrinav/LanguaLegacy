@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import Navigation from "@/components/Navigation";
 import { Link } from "wouter";
 import { ArrowLeft, BookOpen, Mic, Users, Globe } from "lucide-react";
+import { TaskadeProjectCard } from "@/components/TaskadeProject";
 
 export default function LanguageDetail() {
   const { id } = useParams();
@@ -152,6 +153,16 @@ export default function LanguageDetail() {
               </CardContent>
             </Card>
           </Link>
+        </div>
+
+        {/* Taskade Preservation Project */}
+        <div className="mb-8">
+          <TaskadeProjectCard 
+            languageId={language.id}
+            languageName={language.name}
+            region={language.region}
+            threatLevel={language.threatLevel}
+          />
         </div>
 
         {/* Language Details */}
