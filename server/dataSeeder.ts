@@ -19,13 +19,12 @@ export class LanguageDataSeeder {
   async generateEndangeredLanguagesData(request: LanguageDataRequest = {}): Promise<InsertLanguage[]> {
     const { count = 50, regions = [], threatLevels = [] } = request;
     
-    const prompt = `Generate comprehensive data for ${count} real endangered languages. For each language, provide accurate information that matches this exact JSON schema with EVERY possible detail:
+    const prompt = `Generate comprehensive LINGUISTIC CONTENT data for ${count} real endangered languages. Focus on the ACTUAL LANGUAGE CONTENT - alphabet, words, grammar rules, pronunciation - everything needed to speak and understand the language. Provide accurate information that matches this exact JSON schema:
 
 {
-  // BASIC IDENTIFICATION
+  // BASIC INFO
   "name": "string (official language name)",
   "nativeName": "string (how speakers call their language)",
-  "alternativeNames": "string (other names, dialects, historical names)",
   "region": "string (continent: Africa, Asia, Europe, North America, South America, Oceania)",
   "country": "string (primary country)",
   "speakers": "number (current speaker count, can be 0 for extinct)",
@@ -33,106 +32,100 @@ export class LanguageDataSeeder {
   "family": "string (language family)",
   "iso639Code": "string (3-letter ISO code if available, or null)",
   "writingSystem": "string (Latin|Cyrillic|Arabic|Chinese|Japanese|Indian|Other|None)",
-  "description": "string (comprehensive overview)",
+  "description": "string (brief overview)",
 
-  // LINGUISTIC FEATURES - DETAILED
-  "phonology": "string (complete sound system: consonants, vowels, tones, stress)",
-  "morphology": "string (word formation, inflection, derivation patterns)",
-  "syntax": "string (sentence structure, word order, clause types)",
-  "grammar": "string (grammatical features, case systems, verb aspects)",
-  "vocabulary": "string (lexical characteristics, borrowings, semantic fields)",
-  "semantics": "string (meaning systems, metaphors, cultural concepts)",
-  "pragmatics": "string (language use in context, politeness, discourse)",
-  "dialectVariations": "string (regional/social varieties and differences)",
-  "uniqueFeatures": "string (rare grammatical phenomena, unusual characteristics)",
-  "comparativeLinguistics": "string (similarities/differences with related languages)",
+  // ALPHABET & WRITING SYSTEM
+  "alphabet": "string (complete alphabet/character set with order)",
+  "letterSounds": "string (each letter/character and its pronunciation)",
+  "specialCharacters": "string (diacritics, unique symbols, tone marks)",
+  "writingDirection": "string (left-to-right, right-to-left, top-to-bottom)",
+  "punctuation": "string (punctuation marks and their usage)",
+  "numerals": "string (number system and how to write numbers)",
+  "capitalization": "string (capitalization rules if applicable)",
 
-  // CULTURAL & SOCIAL CONTEXT
-  "culturalSignificance": "string (role in identity, ceremonies, traditions)",
-  "traditionalKnowledge": "string (encoded ecological, medical, agricultural knowledge)",
-  "oralTraditions": "string (myths, legends, storytelling traditions)",
-  "religiousSpiritual": "string (sacred uses, prayers, spiritual concepts)",
-  "socialStructure": "string (kinship terms, social hierarchy reflected in language)",
-  "culturalProducts": "string (literature, songs, poetry, folklore in the language)",
-  "ceremonies": "string (ritual uses, ceremonial language, taboos)",
+  // PRONUNCIATION & PHONOLOGY
+  "consonants": "string (all consonant sounds with IPA and descriptions)",
+  "vowels": "string (all vowel sounds with IPA and descriptions)",
+  "tones": "string (tonal system if applicable, tone patterns)",
+  "stress": "string (stress patterns, accent rules)",
+  "syllableStructure": "string (allowed syllable patterns)",
+  "phonotactics": "string (sound combination rules)",
+  "allophony": "string (sound variations in different contexts)",
 
-  // HISTORICAL CONTEXT
-  "historicalContext": "string (language origins, migrations, historical changes)",
-  "colonialImpact": "string (effects of colonization, suppression, policy changes)",
-  "firstDocumentation": "string (earliest written records, who documented it)",
-  "historicalSpeakerNumbers": "string (population changes over time)",
-  "languageShift": "string (factors causing decline, when shift began)",
+  // VOCABULARY - COMPREHENSIVE WORD LISTS
+  "basicVocabulary": "string (essential 500+ words: body parts, family, numbers, colors, time)",
+  "verbs": "string (comprehensive verb list with meanings and forms)",
+  "nouns": "string (extensive noun vocabulary across all domains)",
+  "adjectives": "string (descriptive words, qualities, characteristics)",
+  "adverbs": "string (manner, time, place, frequency adverbs)",
+  "pronouns": "string (personal, possessive, demonstrative, interrogative pronouns)",
+  "prepositions": "string (spatial, temporal, relational prepositions)",
+  "conjunctions": "string (connecting words, logical relationships)",
+  "interjections": "string (exclamations, emotional expressions)",
+  "functionalWords": "string (particles, auxiliaries, determiners)",
+  
+  // SPECIALIZED VOCABULARY
+  "kinshipTerms": "string (family relationships, clan terms)",
+  "environmentalVocabulary": "string (plants, animals, weather, geography)",
+  "culturalTerms": "string (ceremonies, traditions, beliefs)",
+  "bodyVocabulary": "string (anatomy, health, medical terms)",
+  "foodVocabulary": "string (ingredients, cooking, eating)",
+  "toolsObjects": "string (implements, household items, technology)",
+  "timeTerms": "string (calendar, seasons, time expressions)",
+  "spatialTerms": "string (directions, locations, spatial relationships)",
 
-  // GEOGRAPHIC & DEMOGRAPHIC
-  "geographicDistribution": "string (exact locations, settlements, territories)",
-  "speakerDemographics": "string (age distribution, urban vs rural, gender patterns)",
-  "migrationPatterns": "string (diaspora communities, resettlement)",
-  "environmentalContext": "string (ecosystem, climate, geographic features)",
+  // GRAMMAR RULES - COMPLETE SYSTEM
+  "wordOrder": "string (basic sentence structure: SVO, SOV, etc.)",
+  "nounInflection": "string (case system, number, gender marking)",
+  "verbConjugation": "string (tense, aspect, mood, person/number marking)",
+  "pronounSystem": "string (pronoun paradigms, usage rules)",
+  "adjectiveAgreement": "string (how adjectives modify nouns)",
+  "articleSystem": "string (definite/indefinite articles if present)",
+  "possessionRules": "string (how to express ownership)",
+  "questionFormation": "string (how to form questions)",
+  "negationRules": "string (how to make negative statements)",
+  "comparisonRules": "string (comparative and superlative forms)",
+  "compoundWords": "string (how to combine words)",
+  "derivationalMorphology": "string (prefixes, suffixes, word formation)",
 
-  // SOCIOLINGUISTIC FACTORS
-  "languageAttitudes": "string (prestige, stigma, community pride, external perceptions)",
-  "multilingualism": "string (other languages speakers know, code-switching patterns)",
-  "diglossia": "string (formal vs informal use, domain-specific usage)",
-  "intergenerationalTransmission": "string (how language passes to children)",
-  "urbanRuralDifferences": "string (usage patterns in different settings)",
+  // SENTENCE PATTERNS & SYNTAX
+  "basicSentencePatterns": "string (common sentence structures with examples)",
+  "complexSentences": "string (subordination, coordination patterns)",
+  "conditionalSentences": "string (if-then constructions)",
+  "passiveVoice": "string (passive construction if present)",
+  "imperativeForm": "string (commands, requests)",
+  "questionWords": "string (who, what, where, when, why, how)",
+  "relativeClauses": "string (modifying clauses)",
+  "temporalExpressions": "string (time and sequence expressions)",
 
-  // CURRENT STATUS & DOCUMENTATION
-  "currentStatus": "string (active use, domains of use, vitality)",
-  "documentationLevel": "string (quality and quantity of linguistic documentation)",
-  "audioArchives": "string (existing recordings, oral history projects)",
-  "videoDocumentation": "string (visual documentation, sign language if applicable)",
-  "dictionaryStatus": "string (available dictionaries, lexicographic work)",
-  "grammarDocumentation": "string (grammatical descriptions, linguistic analyses)",
-  "corpusLinguistics": "string (text collections, computational resources)",
+  // PRACTICAL LANGUAGE USE
+  "commonPhrases": "string (greetings, farewells, polite expressions)",
+  "everydayConversation": "string (practical dialogues, daily interactions)",
+  "numbersSystem": "string (counting system, mathematical operations)",
+  "directions": "string (giving and receiving directions)",
+  "emergencyPhrases": "string (help, medical, urgent situations)",
+  "socialPhrases": "string (celebrations, condolences, social interactions)",
 
-  // EDUCATION & LITERACY
-  "educationalPrograms": "string (school programs, language immersion, curricula)",
-  "literacyRates": "string (reading/writing abilities in the language)",
-  "teachingMaterials": "string (textbooks, learning resources, pedagogical tools)",
-  "universityPrograms": "string (academic study, linguistics departments)",
+  // EXAMPLE TEXTS
+  "sampleSentences": "string (50+ example sentences with translations)",
+  "dialogueExamples": "string (conversation examples)",
+  "traditionalSayings": "string (proverbs, idioms with explanations)",
+  "storytellingExamples": "string (narrative structures, story openings)",
 
-  // TECHNOLOGY & MEDIA
-  "digitalPresence": "string (websites, apps, social media use)",
-  "mediaProduction": "string (radio, TV, newspapers, films in the language)",
-  "technologicalAdaptation": "string (unicode support, fonts, keyboards)",
-  "onlineResources": "string (digital dictionaries, learning platforms)",
+  // PRONUNCIATION GUIDE
+  "pronunciationRules": "string (how to pronounce written words)",
+  "commonSounds": "string (frequent sound patterns)",
+  "difficultSounds": "string (challenging pronunciations for learners)",
+  "intonationPatterns": "string (sentence melody, question intonation)",
 
-  // LEGAL & POLITICAL STATUS
-  "officialStatus": "string (government recognition, legal protections)",
-  "languageRights": "string (constitutional recognition, minority language rights)",
-  "policySupport": "string (government programs, funding, legislation)",
-  "internationalRecognition": "string (UNESCO status, international organization support)",
+  // DIALECTAL VARIATIONS
+  "dialectDifferences": "string (vocabulary/pronunciation differences between regions)",
+  "formalInformal": "string (register differences, polite vs casual speech)",
 
-  // RESEARCH & ACADEMIC STUDY
-  "keyResearchers": "string (notable linguists, anthropologists studying the language)",
-  "researchInstitutions": "string (universities, institutes conducting research)",
-  "academicPublications": "string (major studies, dissertations, linguistic papers)",
-  "fieldworkHistory": "string (when and how linguistic fieldwork was conducted)",
-
-  // CHALLENGES & THREATS
-  "challenges": "string (specific threats: urbanization, education policy, globalization)",
-  "languageShiftFactors": "string (economic, social, political pressures)",
-  "endangermentFactors": "string (what caused decline, ongoing threats)",
-  "competingLanguages": "string (dominant languages replacing it)",
-
-  // PRESERVATION & REVITALIZATION
-  "revitalizationEfforts": "string (community programs, revival initiatives)",
-  "communitySupport": "string (grassroots efforts, elder involvement)",
-  "governmentSupport": "string (official preservation programs, funding)",
-  "internationalSupport": "string (NGO involvement, international funding)",
-  "successStories": "string (positive developments, increasing usage)",
-  "revitalizationChallenges": "string (obstacles to preservation efforts)",
-
-  // COMMUNITY & CONTACT
-  "contactLanguages": "string (languages in contact, borrowing patterns)",
-  "communityStructure": "string (speaker communities, tribal organization)",
-  "culturalPractices": "string (customs maintained through the language)",
-  "economicFactors": "string (role in traditional economy, modern economic pressures)",
-
-  // FUTURE PROSPECTS
-  "futureOutlook": "string (predictions for language survival, trends)",
-  "youthInvolvement": "string (young people's engagement, learning initiatives)",
-  "emergingOpportunities": "string (new contexts for use, digital opportunities)"
+  // LEARNING AIDS
+  "learningTips": "string (helpful patterns, memory aids)",
+  "commonMistakes": "string (frequent errors learners make)",
+  "practiceExercises": "string (suggested practice activities)"
 }
 
 Requirements:
