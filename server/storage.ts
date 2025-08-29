@@ -39,6 +39,7 @@ export interface IStorage {
   }): Promise<Language[]>;
   getLanguageById(id: string): Promise<Language | undefined>;
   createLanguage(language: InsertLanguage): Promise<Language>;
+  deleteLanguage(id: string): Promise<void>;
 
   // Contribution operations
   getContributions(params?: {
@@ -164,6 +165,10 @@ export class DatabaseStorage implements IStorage {
   async createLanguage(language: InsertLanguage): Promise<Language> {
     const [created] = await db.insert(languages).values(language).returning();
     return created;
+  }
+
+  async deleteLanguage(id: string): Promise<void> {
+    await db.delete(languages).where(eq(languages.id, id));
   }
 
   // Contribution operations

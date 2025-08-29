@@ -10,6 +10,7 @@ import Discover from "@/pages/discover.tsx";
 import Learn from "@/pages/learn.tsx";
 import Contribute from "@/pages/contribute.tsx";
 import Dashboard from "@/pages/dashboard.tsx";
+import AdminPage from "@/pages/admin.tsx";
 import AuthPage from "@/pages/auth.tsx";
 import NotFound from "@/pages/not-found.tsx";
 
@@ -30,6 +31,7 @@ function Router() {
           <Route path="/learn" component={Learn} />
           <Route path="/contribute" component={Contribute} />
           <Route path="/dashboard" component={Dashboard} />
+          <Route path="/admin" component={AdminPage} />
         </>
       )}
       <Route component={NotFound} />

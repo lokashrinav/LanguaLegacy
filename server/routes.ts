@@ -58,6 +58,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete('/api/languages/:id', isAuthenticated, async (req, res) => {
+    try {
+      await storage.deleteLanguage(req.params.id);
+      res.json({ message: "Language deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting language:", error);
+      res.status(500).json({ message: "Failed to delete language" });
+    }
+  });
+
   // Contribution routes
   app.get('/api/contributions', async (req, res) => {
     try {
