@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Navigation from "@/components/Navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { Link } from "wouter";
+import { Bot, Settings, Mic, BookOpen, TrendingUp } from "lucide-react";
 
 export default function Home() {
   const { user } = useAuth();
@@ -81,25 +82,28 @@ export default function Home() {
           </div>
 
           {/* Quick Actions */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="hover:shadow-lg transition-shadow" data-testid="card-continue-learning">
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <i className="fas fa-play-circle text-primary mr-2"></i>
-                  Continue Learning
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground mb-4">
-                  Pick up where you left off with your language lessons
-                </p>
-                <Link to="/learn">
-                  <Button className="w-full" data-testid="button-continue-learning">
-                    Resume Lessons
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Link href="/learn" className="w-full">
+              <Card className="border-2 hover:shadow-lg transition-all cursor-pointer group bg-white" 
+                    style={{borderColor: 'hsl(25 25% 80%)'}}>
+                <CardHeader>
+                  <div className="flex items-center space-x-3">
+                    <div className="p-3 rounded-lg group-hover:scale-110 transition-transform" 
+                         style={{backgroundColor: 'hsl(25 30% 90%)'}}>
+                      <BookOpen className="h-6 w-6" style={{color: 'hsl(25 25% 50%)'}} />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg" style={{color: 'hsl(25 20% 25%)'}}>
+                        Continue Learning
+                      </CardTitle>
+                      <CardDescription className="text-sm">
+                        Resume your language lessons
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+              </Card>
+            </Link>
 
             <Card className="hover:shadow-lg transition-shadow" data-testid="card-contribute">
               <CardHeader>

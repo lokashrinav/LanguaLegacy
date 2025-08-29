@@ -11,6 +11,7 @@ import Learn from "@/pages/learn.tsx";
 import Contribute from "@/pages/contribute.tsx";
 import Dashboard from "@/pages/dashboard.tsx";
 import AdminPage from "@/pages/admin.tsx";
+import AIInterviewPage from "@/pages/ai-interview.tsx";
 import AuthPage from "@/pages/auth.tsx";
 import NotFound from "@/pages/not-found.tsx";
 
@@ -32,6 +33,7 @@ function Router() {
           <Route path="/contribute" component={Contribute} />
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/admin" component={AdminPage} />
+          <Route path="/ai-interview" component={AIInterviewPage} />
         </>
       )}
       <Route component={NotFound} />

@@ -68,6 +68,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI Interview routes
+  app.post('/api/ai/interview', isAuthenticated, async (req, res) => {
+    try {
+      const { conductLanguageInterview } = await import('./anthropic');
+      
+      const result = await conductLanguageInterview(
+        req.body.message,
+        req.body.context
+      );
+      
+      res.json(result);
+    } catch (error) {
+      console.error("Error in AI interview:", error);
+      res.status(500).json({ 
+        message: "I'm having trouble processing that right now. Could you try rephrasing your question?",
+        error: "AI service temporarily unavailable"
+      });
+    }
+  });
+
+  app.post('/api/ai/detect-language', isAuthenticated, async (req, res) => {
+    try {
+      const { detectLanguageInDatabase } = await import('./anthropic');
+      
+      const result = await detectLanguageInDatabase(
+        req.body.languageName,
+        req.body.existingLanguages
+      );
+      
+      res.json(result);
+    } catch (error) {
+      console.error("Error detecting language:", error);
+      res.status(500).json({ message: "Failed to detect language" });
+    }
+  });
+
   // Contribution routes
   app.get('/api/contributions', async (req, res) => {
     try {
