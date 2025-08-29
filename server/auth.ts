@@ -167,9 +167,19 @@ export function setupAuth(app: Express) {
           throw new Error("GOOGLE_APPLICATION_CREDENTIALS not found");
         }
         
-        const serviceAccount = JSON.parse(serviceAccountJson);
+        let serviceAccount;
+        try {
+          serviceAccount = JSON.parse(serviceAccountJson);
+        } catch (parseError) {
+          throw new Error("Invalid JSON in GOOGLE_APPLICATION_CREDENTIALS");
+        }
+        
+        // Explicitly clear the environment variable to prevent auto-detection
+        delete process.env.GOOGLE_APPLICATION_CREDENTIALS;
+        
         admin.initializeApp({
           credential: admin.credential.cert(serviceAccount),
+          projectId: serviceAccount.project_id,
         });
       }
 
