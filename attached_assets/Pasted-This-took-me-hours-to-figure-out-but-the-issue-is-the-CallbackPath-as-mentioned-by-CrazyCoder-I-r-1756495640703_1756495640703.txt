@@ -1,0 +1,93 @@
+This took me hours to figure out, but the issue is the CallbackPath as mentioned by @CrazyCoder. I realised that the CallbackPath in public void ConfigureAuth(IAppBuilder app) MUST be different to when it is being set in the ChallengeResult. If they are the same a 500 error is thrown in OWIN.
+
+My code is for ConfigureAuth(IAppBuilder app) is
+
+var googleOptions = new Microsoft.Owin.Security.Google.GoogleOAuth2AuthenticationOptions
+{
+    ClientId = "xxx",
+    ClientSecret = "yyy",
+    CallbackPath = new PathString("/callbacks/google"), //this is never called by MVC, but needs to be registered at your oAuth provider
+
+    Provider = new GoogleOAuth2AuthenticationProvider
+    {
+        OnAuthenticated = (context) =>
+        {
+            context.Identity.AddClaim(new Claim("picture", context.User.GetValue("picture").ToString()));
+            context.Identity.AddClaim(new Claim("profile", context.User.GetValue("profile").ToString()));
+            return Task.FromResult(0);
+        }      
+    }
+};
+
+googleOptions.Scope.Add("email");
+
+app.UseGoogleAuthentication(googleOptions);
+My 'callbacks' Controller code is:
+
+// GET: /callbacks/googlereturn - callback Action
+[AllowAnonymous]
+public async Task<ActionResult> googlereturn()
+{
+        return View();
+}
+
+//POST: /Account/GooglePlus
+public ActionResult GooglePlus()
+{
+    return new ChallengeResult("Google", Request.Url.GetLeftPart(UriPartial.Authority) + "/callbacks/googlereturn", null);  
+    //Needs to be a path to an Action that will handle the oAuth Provider callback
+}
+
+private class ChallengeResult : HttpUnauthorizedResult
+{
+    public ChallengeResult(string provider, string redirectUri)
+        : this(provider, redirectUri, null)
+    {
+    }
+
+    public ChallengeResult(string provider, string redirectUri, string userId)
+    {
+        LoginProvider = provider;
+        RedirectUri = redirectUri;
+        UserId = userId;
+    }
+
+    public string LoginProvider { get; set; }
+    public string RedirectUri { get; set; }
+    public string UserId { get; set; }
+
+    public override void ExecuteResult(ControllerContext context)
+    {
+        var properties = new AuthenticationProperties() { RedirectUri = RedirectUri };
+        if (UserId != null)
+        {
+            properties.Dictionary[XsrfKey] = UserId;
+        }
+        context.HttpContext.GetOwinContext().Authentication.Challenge(properties, LoginProvider);
+    }
+}
+callbacks/google seems to handled by OWIN
+callbacks/googlereturn seems to handled by MVC
+It is all working now, although would love to know exactly what is happening 'under the bonnet'
+
+My advice, unless you have another requirement, is to let OWIN use default redirect paths and make sure you don't use them yourself.
+
+Share
+Improve this answer
+Follow
+edited Sep 27, 2014 at 2:54
+community wiki
+5 revs, 3 users 70%
+ISAIMobile
+Sorry, I forgot to answer this long ago. – 
+CrazyCoderz
+ CommentedAug 14, 2014 at 4:06
+To clarify what fixed this for me: 1) Redirect URL setting in the account.live.com application area (API Settings) was set to "http://<mydomain>/Account/MicrosoftLoginCallback" 2) Callback path was set to "PathString("/Account/MicrosoftLoginCallback");" for IAppBuilder: app.UseMicrosoftAccountAuthentication(new MicrosoftAccountAuthenticationOptions {CallbackPath = msCallbackPath, ClientId =, ClientSecret =} 3) RedirectUri used for challenge had to be changed from "MicrosoftLoginCallback" to "MSLoginCallback", just in the AccountController action and the Authentication.Challenge() call. – 
+Paul Schroeder
+ CommentedSep 22, 2014 at 1:27
+In short, when all three items above matched in name I was getting a 500 error and not much else to go on. Looking in Fiddler, I think that Microsoft is actually calling back to "Account/MicrosoftLoginCallback" (as configured for IAppBuilder). However, something in the infrastrucutre/provider might be mapping that to "Account/MSLoginCallback" (the actual controller action method I provided for the challenge AuthenticationProperties object. – 
+Paul Schroeder
+ CommentedSep 22, 2014 at 1:44
+Have posted as a UserVoice bug, please UPVOTE, aspnet.uservoice.com/forums/41199-general-asp-net/suggestions/… – 
+OzBob
+ CommentedSep 26, 2014 at 6:21
