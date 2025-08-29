@@ -342,6 +342,26 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  async incrementLessonsCompleted(userId: string, languageId: string): Promise<void> {
+    const [progress] = await db
+      .select()
+      .from(learningProgress)
+      .where(and(
+        eq(learningProgress.userId, userId),
+        eq(learningProgress.languageId, languageId)
+      ));
+
+    if (progress) {
+      await db
+        .update(learningProgress)
+        .set({
+          lessonsCompleted: (progress.lessonsCompleted || 0) + 1,
+          updatedAt: new Date(),
+        })
+        .where(eq(learningProgress.id, progress.id));
+    }
+  }
+
   async updateLearningStreak(userId: string, languageId: string): Promise<void> {
     const [progress] = await db
       .select()

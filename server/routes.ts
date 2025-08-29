@@ -414,10 +414,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const completion = await storage.markLessonComplete(completionData);
       
-      // Update streak after completing lesson
+      // Update progress and streak after completing lesson
       const lesson = await storage.getLessonById(completionData.lessonId);
       if (lesson) {
         await storage.updateLearningStreak(userId, lesson.languageId);
+        await storage.incrementLessonsCompleted(userId, lesson.languageId);
       }
       
       res.json(completion);
