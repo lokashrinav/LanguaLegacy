@@ -40,6 +40,11 @@ Generate exactly this format for ${count} different real endangered languages. N
         throw new Error('Unexpected response type from AI');
       }
 
+      // DEBUG: Log the raw response
+      console.log('=== RAW AI RESPONSE ===');
+      console.log(content.text);
+      console.log('=== END RAW RESPONSE ===');
+      
       // Clean the response text - remove markdown code blocks if present
       let cleanText = content.text.trim();
       if (cleanText.startsWith('```json')) {
@@ -48,25 +53,11 @@ Generate exactly this format for ${count} different real endangered languages. N
         cleanText = cleanText.replace(/^```\s*/, '').replace(/\s*```$/, '');
       }
 
-      // Try to fix common JSON issues
-      cleanText = cleanText.replace(/[\u0000-\u001F\u007F-\u009F]/g, ''); // Remove control characters
-      cleanText = cleanText.replace(/\\/g, '\\\\'); // Escape backslashes
-      cleanText = cleanText.replace(/"/g, '\\"'); // Escape quotes
-      cleanText = cleanText.replace(/\\"/g, '"'); // Fix over-escaping
-      cleanText = cleanText.replace(/\\"([^"]*?)\\"/g, '"$1"'); // Fix property names
+      console.log('=== CLEANED TEXT ===');
+      console.log(cleanText);
+      console.log('=== END CLEANED ===');
 
-      let languagesData: InsertLanguage[];
-      try {
-        languagesData = JSON.parse(cleanText) as InsertLanguage[];
-      } catch (parseError) {
-        // If parsing fails, try to extract JSON manually
-        const arrayMatch = cleanText.match(/\[[\s\S]*\]/);
-        if (arrayMatch) {
-          languagesData = JSON.parse(arrayMatch[0]) as InsertLanguage[];
-        } else {
-          throw parseError;
-        }
-      }
+      const languagesData = JSON.parse(cleanText) as InsertLanguage[];
       
       // Validate the data structure
       if (!Array.isArray(languagesData)) {

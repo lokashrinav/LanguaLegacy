@@ -217,6 +217,33 @@ export default function DatabaseSeeding() {
               </div>
 
               <Button
+                onClick={async () => {
+                  try {
+                    const response = await apiRequest('/api/admin/test-storage', {
+                      method: 'POST',
+                      body: JSON.stringify({}),
+                      headers: { 'Content-Type': 'application/json' }
+                    });
+                    toast({
+                      title: "Storage Test Successful!",
+                      description: `Created test language: ${response.created?.name}`,
+                    });
+                  } catch (error) {
+                    toast({
+                      title: "Storage Test Failed",
+                      description: error instanceof Error ? error.message : "Unknown error",
+                      variant: "destructive",
+                    });
+                  }
+                }}
+                variant="outline"
+                className="w-full mb-3"
+                data-testid="button-test-storage"
+              >
+                🔧 Test Database Storage
+              </Button>
+
+              <Button
                 onClick={handleSeedDatabase}
                 disabled={seedDatabaseMutation.isPending}
                 className="w-full"

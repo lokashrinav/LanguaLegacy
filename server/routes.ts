@@ -104,14 +104,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Test storage directly
+  app.post('/api/admin/test-storage', isAuthenticated, async (req, res) => {
+    try {
+      const testLanguage = {
+        name: "Test Language",
+        nativeName: "Testilingua",
+        region: "Europe",
+        country: "Testland",
+        speakers: 100,
+        threatLevel: "endangered",
+        family: "Test Family",
+        iso639Code: "tst",
+        writingSystem: "Latin",
+        description: "A test language"
+      };
+      
+      console.log('Attempting to create test language...');
+      const created = await storage.createLanguage(testLanguage);
+      console.log('Successfully created test language:', created);
+      res.json({ success: true, created });
+    } catch (error) {
+      console.error('Storage test failed:', error);
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
   // Database seeding routes
   app.post('/api/admin/seed-languages', isAuthenticated, async (req, res) => {
     try {
-      const { languageSeeder } = await import('./dataSeeder');
+      const { LanguageDataSeeder } = await import('./dataSeeder');
       
-      const { count = 50, regions = [], threatLevels = [] } = req.body;
+      const { count = 10, regions = [], threatLevels = [] } = req.body;
       
-      const results = await languageSeeder.seedDatabase({
+      const seeder = new LanguageDataSeeder();
+      const results = await seeder.seedDatabase({
         count,
         regions,
         threatLevels
@@ -132,9 +159,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/admin/database-summary', isAuthenticated, async (req, res) => {
     try {
-      const { languageSeeder } = await import('./dataSeeder');
+      const languages = await storage.getLanguages();
       
-      const summary = await languageSeeder.getDataSummary();
+      const summary = {
+        totalLanguages: languages.length,
+        byThreatLevel: languages.reduce((acc, lang) => {
+          acc[lang.threatLevel] = (acc[lang.threatLevel] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>),
+        byRegion: languages.reduce((acc, lang) => {
+          acc[lang.region] = (acc[lang.region] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>)
+      };
       
       res.json(summary);
     } catch (error) {
