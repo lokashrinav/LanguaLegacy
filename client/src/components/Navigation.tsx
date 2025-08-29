@@ -31,7 +31,7 @@ export default function Navigation({ showAuthButton = false }: NavigationProps) 
   const navItems = [
     { href: "/discover", label: "Discover", icon: "fas fa-search" },
     { href: "/learn", label: "Learn", icon: "fas fa-graduation-cap" },
-    { href: "/contribute", label: "Contribute", icon: "fas fa-microphone" },
+    { href: "/ai-interview", label: "AI Interview", icon: "fas fa-robot" },
   ];
 
   const authenticatedNavItems = [

@@ -108,14 +108,14 @@ export default function LanguageCard({ language }: LanguageCardProps) {
               Learn
             </Button>
           </Link>
-          <Link to="/contribute" className="flex-1">
+          <Link to="/ai-interview" className="flex-1">
             <Button 
               variant="secondary" 
               size="sm" 
               className="w-full"
-              data-testid={`button-contribute-${language.id}`}
+              data-testid={`button-ai-interview-${language.id}`}
             >
-              Contribute
+              AI Interview
             </Button>
           </Link>
         </div>

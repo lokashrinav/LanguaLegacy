@@ -112,19 +112,19 @@ export default function Home() {
               </Card>
             </Link>
 
-            <Card className="hover:shadow-lg transition-shadow bg-white" data-testid="card-contribute">
+            <Card className="hover:shadow-lg transition-shadow bg-white" data-testid="card-ai-interview">
               <CardHeader>
                 <CardTitle>
-                  Contribute Content
+                  AI Interview
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground mb-4">
-                  Help preserve languages by adding audio and translations
+                  Participate in AI-powered conversations to help document languages
                 </p>
-                <Link to="/contribute">
-                  <Button variant="secondary" className="w-full" data-testid="button-contribute">
-                    Start Contributing
+                <Link to="/ai-interview">
+                  <Button variant="secondary" className="w-full" data-testid="button-ai-interview">
+                    Start Interview
                   </Button>
                 </Link>
               </CardContent>
@@ -214,9 +214,9 @@ export default function Home() {
                           Learn
                         </Button>
                       </Link>
-                      <Link to="/contribute" className="flex-1">
-                        <Button variant="secondary" size="sm" className="w-full" data-testid={`button-contribute-${language.id}`}>
-                          Contribute
+                      <Link to="/ai-interview" className="flex-1">
+                        <Button variant="secondary" size="sm" className="w-full" data-testid={`button-ai-interview-${language.id}`}>
+                          AI Interview
                         </Button>
                       </Link>
                     </div>
