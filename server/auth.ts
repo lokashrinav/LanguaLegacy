@@ -154,51 +154,59 @@ export function setupAuth(app: Express) {
   // Google login endpoint
   app.post("/api/auth/google", async (req: AuthRequest, res: Response) => {
     try {
-      console.log("=== Google login attempt ===");
-      console.log("Request body:", req.body);
       const { idToken } = req.body;
       if (!idToken) {
-        console.log("Missing idToken in request body");
-        return res.status(400).json({ error: "Missing token" });
+        return res.status(400).json({ error: "ID token is required" });
       }
 
       // Verify the Firebase ID token
-      console.log("Attempting to verify ID token...");
       const admin = await import("firebase-admin");
       if (!admin.apps.length) {
-        console.log("Initializing Firebase Admin...");
+        const serviceAccountJson = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+        if (!serviceAccountJson) {
+          throw new Error("GOOGLE_APPLICATION_CREDENTIALS not found");
+        }
+        
+        const serviceAccount = JSON.parse(serviceAccountJson);
         admin.initializeApp({
-          credential: admin.credential.applicationDefault(),
+          credential: admin.credential.cert(serviceAccount),
         });
       }
 
-      console.log("Verifying token with Firebase Admin...");
       const decoded = await admin.auth().verifyIdToken(idToken);
-      console.log("Token verified. User info:", { uid: decoded.uid, email: decoded.email });
-      const email = decoded.email;
+      const { uid, email, name, picture } = decoded;
       
       if (!email || !decoded.email_verified) {
         return res.status(401).json({ error: "Email not verified" });
       }
 
-      // Find or create user
-      let user = await storage.getUserByEmail(email);
-      if (!user) {
-        user = await storage.createUser({
-          email,
-          firstName: decoded.name?.split(' ')[0] || null,
-          lastName: decoded.name?.split(' ').slice(1).join(' ') || null,
-          profileImageUrl: decoded.picture || null,
-          authProvider: "google",
-          googleId: decoded.uid,
-        });
-      }
+      // Split name into first and last
+      const nameParts = name ? name.split(' ') : [];
+      const firstName = nameParts[0] || null;
+      const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : null;
+
+      // Upsert user in database
+      const user = await storage.upsertUser({
+        id: uid,
+        email: email || null,
+        firstName,
+        lastName,
+        profileImageUrl: picture || null,
+        authProvider: "google",
+      });
 
       // Set session
       req.session.userId = user.id;
-      res.status(204).end();
+      req.user = {
+        id: user.id,
+        email: user.email!,
+        firstName: user.firstName || undefined,
+        lastName: user.lastName || undefined,
+        profileImageUrl: user.profileImageUrl || undefined,
+      };
+
+      res.json(req.user);
     } catch (error) {
-      console.error("Google login error:", error);
       res.status(500).json({ error: "Failed to login with Google" });
     }
   });

@@ -1,0 +1,201 @@
+=== Google login button clicked ===
+auth.tsx:172 Firebase config check: langua-78158
+auth.tsx:185 Calling googleLogin()...
+firebase.ts:38 Starting Google sign-in with popup...
+firebase.ts:42 Cross-Origin-Opener-Policy policy would block the window.closed call.
+poll @ firebase_auth.js?v=f2ba46e9:7083
+setTimeout
+poll @ firebase_auth.js?v=f2ba46e9:7098
+pollUserCancellation @ firebase_auth.js?v=f2ba46e9:7100
+onExecution @ firebase_auth.js?v=f2ba46e9:7056
+await in onExecution
+(anonymous) @ firebase_auth.js?v=f2ba46e9:6908
+await in (anonymous)
+execute @ firebase_auth.js?v=f2ba46e9:6904
+executeNotNull @ firebase_auth.js?v=f2ba46e9:7024
+signInWithPopup @ firebase_auth.js?v=f2ba46e9:6989
+googleLogin @ firebase.ts:42
+handleGoogleLogin @ auth.tsx:186
+callCallback2 @ chunk-RPCDYKBN.js?v=f2ba46e9:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=f2ba46e9:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=f2ba46e9:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=f2ba46e9:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=f2ba46e9:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=f2ba46e9:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=f2ba46e9:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=f2ba46e9:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=f2ba46e9:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=f2ba46e9:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=f2ba46e9:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=f2ba46e9:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=f2ba46e9:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=f2ba46e9:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=f2ba46e9:5449Understand this error
+firebase.ts:42 Cross-Origin-Opener-Policy policy would block the window.closed call.
+poll @ firebase_auth.js?v=f2ba46e9:7083
+setTimeout
+poll @ firebase_auth.js?v=f2ba46e9:7098
+pollUserCancellation @ firebase_auth.js?v=f2ba46e9:7100
+onExecution @ firebase_auth.js?v=f2ba46e9:7056
+await in onExecution
+(anonymous) @ firebase_auth.js?v=f2ba46e9:6908
+await in (anonymous)
+execute @ firebase_auth.js?v=f2ba46e9:6904
+executeNotNull @ firebase_auth.js?v=f2ba46e9:7024
+signInWithPopup @ firebase_auth.js?v=f2ba46e9:6989
+googleLogin @ firebase.ts:42
+handleGoogleLogin @ auth.tsx:186
+callCallback2 @ chunk-RPCDYKBN.js?v=f2ba46e9:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=f2ba46e9:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=f2ba46e9:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=f2ba46e9:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=f2ba46e9:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=f2ba46e9:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=f2ba46e9:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=f2ba46e9:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=f2ba46e9:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=f2ba46e9:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=f2ba46e9:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=f2ba46e9:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=f2ba46e9:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=f2ba46e9:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=f2ba46e9:5449Understand this error
+firebase.ts:42 Cross-Origin-Opener-Policy policy would block the window.closed call.
+poll @ firebase_auth.js?v=f2ba46e9:7083
+setTimeout
+poll @ firebase_auth.js?v=f2ba46e9:7098
+setTimeout
+poll @ firebase_auth.js?v=f2ba46e9:7098
+pollUserCancellation @ firebase_auth.js?v=f2ba46e9:7100
+onExecution @ firebase_auth.js?v=f2ba46e9:7056
+await in onExecution
+(anonymous) @ firebase_auth.js?v=f2ba46e9:6908
+await in (anonymous)
+execute @ firebase_auth.js?v=f2ba46e9:6904
+executeNotNull @ firebase_auth.js?v=f2ba46e9:7024
+signInWithPopup @ firebase_auth.js?v=f2ba46e9:6989
+googleLogin @ firebase.ts:42
+handleGoogleLogin @ auth.tsx:186
+callCallback2 @ chunk-RPCDYKBN.js?v=f2ba46e9:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=f2ba46e9:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=f2ba46e9:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=f2ba46e9:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=f2ba46e9:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=f2ba46e9:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=f2ba46e9:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=f2ba46e9:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=f2ba46e9:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=f2ba46e9:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=f2ba46e9:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=f2ba46e9:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=f2ba46e9:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=f2ba46e9:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=f2ba46e9:5449Understand this error
+firebase.ts:42 Cross-Origin-Opener-Policy policy would block the window.closed call.
+poll @ firebase_auth.js?v=f2ba46e9:7083
+setTimeout
+poll @ firebase_auth.js?v=f2ba46e9:7098
+setTimeout
+poll @ firebase_auth.js?v=f2ba46e9:7098
+pollUserCancellation @ firebase_auth.js?v=f2ba46e9:7100
+onExecution @ firebase_auth.js?v=f2ba46e9:7056
+await in onExecution
+(anonymous) @ firebase_auth.js?v=f2ba46e9:6908
+await in (anonymous)
+execute @ firebase_auth.js?v=f2ba46e9:6904
+executeNotNull @ firebase_auth.js?v=f2ba46e9:7024
+signInWithPopup @ firebase_auth.js?v=f2ba46e9:6989
+googleLogin @ firebase.ts:42
+handleGoogleLogin @ auth.tsx:186
+callCallback2 @ chunk-RPCDYKBN.js?v=f2ba46e9:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=f2ba46e9:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=f2ba46e9:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=f2ba46e9:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=f2ba46e9:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=f2ba46e9:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=f2ba46e9:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=f2ba46e9:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=f2ba46e9:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=f2ba46e9:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=f2ba46e9:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=f2ba46e9:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=f2ba46e9:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=f2ba46e9:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=f2ba46e9:5449Understand this error
+cb=gapi.loaded_0?le=scs:195 Cross-Origin-Opener-Policy policy would block the window.close call.
+close @ firebase_auth.js?v=f2ba46e9:7549
+cleanUp @ firebase_auth.js?v=f2ba46e9:7071
+unregisterAndCleanUp @ firebase_auth.js?v=f2ba46e9:6973
+resolve @ firebase_auth.js?v=f2ba46e9:6961
+onAuthEvent @ firebase_auth.js?v=f2ba46e9:6931
+await in onAuthEvent
+sendToConsumer @ firebase_auth.js?v=f2ba46e9:7304
+(anonymous) @ firebase_auth.js?v=f2ba46e9:7284
+onEvent @ firebase_auth.js?v=f2ba46e9:7281
+(anonymous) @ firebase_auth.js?v=f2ba46e9:7712
+Tm @ cb=gapi.loaded_0?le=scs:195
+(anonymous) @ cb=gapi.loaded_0?le=scs:195
+hl @ cb=gapi.loaded_0?le=scs:174
+ql @ cb=gapi.loaded_0?le=scs:174
+Lk @ cb=gapi.loaded_0?le=scs:175
+Rk.sI @ cb=gapi.loaded_0?le=scs:168Understand this error
+cb=gapi.loaded_0?le=scs:195 Cross-Origin-Opener-Policy policy would block the window.close call.
+close @ firebase_auth.js?v=f2ba46e9:7549
+cleanUp @ firebase_auth.js?v=f2ba46e9:7071
+unregisterAndCleanUp @ firebase_auth.js?v=f2ba46e9:6973
+resolve @ firebase_auth.js?v=f2ba46e9:6961
+onAuthEvent @ firebase_auth.js?v=f2ba46e9:6931
+await in onAuthEvent
+sendToConsumer @ firebase_auth.js?v=f2ba46e9:7304
+(anonymous) @ firebase_auth.js?v=f2ba46e9:7284
+onEvent @ firebase_auth.js?v=f2ba46e9:7281
+(anonymous) @ firebase_auth.js?v=f2ba46e9:7712
+Tm @ cb=gapi.loaded_0?le=scs:195
+(anonymous) @ cb=gapi.loaded_0?le=scs:195
+hl @ cb=gapi.loaded_0?le=scs:174
+ql @ cb=gapi.loaded_0?le=scs:174
+Lk @ cb=gapi.loaded_0?le=scs:175
+Rk.sI @ cb=gapi.loaded_0?le=scs:168Understand this error
+firebase.ts:43 ✅ Google popup login successful: {user: true, email: 'lokashrinav@gmail.com', uid: 'vFDcs8DS42cHwdHQCZnPmVFWZgL2'}
+auth.tsx:189 Processing Google popup result for user: lokashrinav@gmail.com
+auth.tsx:192 Got ID token, sending to backend...
+queryClient.ts:15  POST https://7ebe7a96-58ff-4de7-a2ac-3d93252b9e08-00-3owx0y1eg4cg4.riker.replit.dev/api/auth/google 500 (Internal Server Error)
+apiRequest @ queryClient.ts:15
+handleGoogleLogin @ auth.tsx:193
+await in handleGoogleLogin
+callCallback2 @ chunk-RPCDYKBN.js?v=f2ba46e9:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=f2ba46e9:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=f2ba46e9:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=f2ba46e9:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=f2ba46e9:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=f2ba46e9:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=f2ba46e9:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=f2ba46e9:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=f2ba46e9:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=f2ba46e9:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=f2ba46e9:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=f2ba46e9:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=f2ba46e9:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=f2ba46e9:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=f2ba46e9:5449Understand this error
+auth.tsx:204 Backend authentication error: Error: 500: {"error":"Failed to login with Google"}
+    at throwIfResNotOk (queryClient.ts:6:11)
+    at async apiRequest (queryClient.ts:22:3)
+    at async handleGoogleLogin (auth.tsx:193:23)
+handleGoogleLogin @ auth.tsx:204
+await in handleGoogleLogin
+callCallback2 @ chunk-RPCDYKBN.js?v=f2ba46e9:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=f2ba46e9:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=f2ba46e9:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=f2ba46e9:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=f2ba46e9:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=f2ba46e9:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=f2ba46e9:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=f2ba46e9:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=f2ba46e9:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=f2ba46e9:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=f2ba46e9:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=f2ba46e9:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=f2ba46e9:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=f2ba46e9:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=f2ba46e9:5449Understand this error

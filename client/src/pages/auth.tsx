@@ -40,50 +40,6 @@ export default function AuthPage() {
   // Initialize Firebase
   useEffect(() => {
     initFirebase();
-    
-    // Handle Google redirect result with delay
-    const checkRedirectResult = async () => {
-      try {
-        await new Promise(resolve => setTimeout(resolve, 100)); // Small delay
-        const result = await handleGoogleRedirect();
-        
-        if (result && result.user) {
-          console.log("Processing Google redirect result for user:", result.user.email);
-          try {
-            const idToken = await result.user.getIdToken();
-            console.log("Got ID token, sending to backend...");
-            const res = await apiRequest("POST", "/api/auth/google", { idToken });
-            
-            if (res.ok) {
-              queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-              toast({
-                title: "Welcome!",
-                description: "You have successfully signed in with Google.",
-              });
-              setLocation("/");
-            }
-          } catch (error) {
-            console.error("Google login error:", error);
-            toast({
-              title: "Google Login Failed",
-              description: "Failed to complete Google sign-in. Please try again.",
-              variant: "destructive",
-            });
-          }
-        }
-      } catch (error) {
-        console.error("Google redirect error:", error);
-        if (error.message && !error.message.includes('No redirect operation')) {
-          toast({
-            title: "Google Login Error",
-            description: "Failed to complete Google sign-in. Please try again.",
-            variant: "destructive",
-          });
-        }
-      }
-    };
-    
-    checkRedirectResult();
   }, []);
 
   // Redirect if already logged in
@@ -164,15 +120,11 @@ export default function AuthPage() {
   };
 
   const handleGoogleLogin = async () => {
-    console.log("=== Google login button clicked ===");
     const hasFirebaseConfig = import.meta.env.VITE_FIREBASE_API_KEY && 
                              import.meta.env.VITE_FIREBASE_APP_ID && 
                              import.meta.env.VITE_FIREBASE_PROJECT_ID;
 
-    console.log("Firebase config check:", hasFirebaseConfig);
-
     if (!hasFirebaseConfig) {
-      console.log("Firebase config missing, showing toast");
       toast({
         title: "Google Login Not Available",
         description: "Please configure Firebase credentials to enable Google login.",
@@ -182,14 +134,11 @@ export default function AuthPage() {
     }
 
     try {
-      console.log("Calling googleLogin()...");
       const result = await googleLogin();
       
       if (result && result.user) {
-        console.log("Processing Google popup result for user:", result.user.email);
         try {
           const idToken = await result.user.getIdToken();
-          console.log("Got ID token, sending to backend...");
           const res = await apiRequest("POST", "/api/auth/google", { idToken });
           
           if (res.ok) {
@@ -201,7 +150,6 @@ export default function AuthPage() {
             setLocation("/");
           }
         } catch (backendError) {
-          console.error("Backend authentication error:", backendError);
           toast({
             title: "Google Login Failed",
             description: "Failed to complete Google sign-in. Please try again.",
@@ -209,8 +157,7 @@ export default function AuthPage() {
           });
         }
       }
-    } catch (error) {
-      console.error("Error in handleGoogleLogin:", error);
+    } catch (error: any) {
       if (error.code === 'auth/popup-closed-by-user') {
         toast({
           title: "Google Login Cancelled",

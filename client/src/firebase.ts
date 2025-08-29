@@ -13,81 +13,20 @@ let app: any = null;
 let auth: any = null;
 
 export function initFirebase() {
-  console.log("Firebase config:", { 
-    hasApiKey: !!firebaseConfig.apiKey,
-    hasAppId: !!firebaseConfig.appId, 
-    hasProjectId: !!firebaseConfig.projectId,
-    authDomain: firebaseConfig.authDomain
-  });
-  
   if (firebaseConfig.apiKey && firebaseConfig.appId && firebaseConfig.projectId) {
     app = initializeApp(firebaseConfig);
     auth = getAuth(app);
-    console.log("Firebase initialized successfully");
-  } else {
-    console.error("Firebase config missing required fields");
   }
 }
 
 export async function googleLogin() {
   if (!auth) {
-    console.error("Firebase not initialized");
     return null;
   }
   
-  console.log("Starting Google sign-in with popup...");
   const provider = new GoogleAuthProvider();
-  
-  try {
-    const result = await signInWithPopup(auth, provider);
-    console.log("✅ Google popup login successful:", {
-      user: !!result.user,
-      email: result.user?.email,
-      uid: result.user?.uid
-    });
-    return result;
-  } catch (error) {
-    console.error("❌ Google popup login failed:", error);
-    throw error;
-  }
-}
-
-export function handleGoogleRedirect() {
-  if (!auth) {
-    console.error("Firebase not initialized");
-    return Promise.resolve(null);
-  }
-  
-  console.log("🔍 Checking for Google redirect result...", {
-    currentUrl: window.location.href,
-    hasQueryParams: window.location.search.length > 0,
-    hasHash: window.location.hash.length > 0
-  });
-  
-  return getRedirectResult(auth).then(result => {
-    if (result) {
-      console.log("✅ Google redirect result found:", { 
-        user: !!result.user, 
-        email: result.user?.email,
-        uid: result.user?.uid,
-        providerId: result.providerId,
-        operationType: result.operationType
-      });
-    } else {
-      console.log("ℹ️ No redirect result found", {
-        authCurrentUser: !!auth.currentUser,
-        userEmail: auth.currentUser?.email
-      });
-    }
-    return result;
-  }).catch(error => {
-    console.error("❌ Error getting redirect result:", {
-      error: error.message,
-      code: error.code,
-      details: error
-    });
-    throw error;
-  });
+  const result = await signInWithPopup(auth, provider);
+  return result;
 }
 
 export { auth };
