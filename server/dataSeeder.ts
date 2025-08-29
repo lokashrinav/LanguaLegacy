@@ -19,35 +19,14 @@ export class LanguageDataSeeder {
   async generateEndangeredLanguagesData(request: LanguageDataRequest = {}): Promise<InsertLanguage[]> {
     const { count = 50, regions = [], threatLevels = [] } = request;
     
-    const prompt = `Generate ${count} real endangered languages with linguistic data. Use authentic languages from UNESCO Atlas. Return valid JSON only.
+    const prompt = `Generate ${count} endangered languages. Return ONLY valid JSON array. No explanations, no markdown.
 
-Schema:
-{
-  "name": "string",
-  "nativeName": "string", 
-  "region": "string (Africa/Asia/Europe/North America/South America/Oceania)",
-  "country": "string",
-  "speakers": "number",
-  "threatLevel": "string (vulnerable/endangered/critically_endangered/extinct)",
-  "family": "string",
-  "iso639Code": "string or null",
-  "writingSystem": "string (Latin/Cyrillic/Arabic/Chinese/Japanese/Indian/Other/None)",
-  "description": "string (brief overview)",
-  "alphabet": "string (writing system and characters)",
-  "basicVocabulary": "string (essential words with translations)",
-  "grammarOverview": "string (key grammatical features)",
-  "commonPhrases": "string (daily expressions and phrases)",
-  "culturalContext": "string (cultural significance and context)"
-}
+CRITICAL: Use single words or short phrases only. No quotes inside text. No newlines.
 
-Requirements:
-- Use real endangered languages from UNESCO Atlas
-- Include languages from different continents  
-- Mix threat levels for diversity
-- Keep content substantial but valid JSON
-- No markdown formatting
+Example format:
+[{"name":"Ainu","nativeName":"Aynu","region":"Asia","country":"Japan","speakers":2,"threatLevel":"critically_endangered","family":"Isolate","iso639Code":"ain","writingSystem":"Latin","description":"Indigenous language of Japan","alphabet":"Latin script","basicVocabulary":"kamuy=god, cise=house, seta=dog","grammarOverview":"SOV word order, agglutinative","commonPhrases":"irankarapte=hello, iyayraykere=thank you","culturalContext":"Sacred bear ceremonies and oral traditions"}]
 
-Return only valid JSON array:`;
+Generate exactly this format for ${count} different real endangered languages. No extra text.`;
 
     try {
       const response = await anthropic.messages.create({
