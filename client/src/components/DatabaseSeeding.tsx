@@ -220,9 +220,10 @@ export default function DatabaseSeeding() {
                 onClick={async () => {
                   try {
                     const response = await apiRequest('POST', '/api/admin/test-storage', {});
+                    const data = await response.json();
                     toast({
                       title: "Storage Test Successful!",
-                      description: `Created test language: ${response.created?.name}`,
+                      description: `Created test language: ${data.created?.name}`,
                     });
                   } catch (error) {
                     toast({

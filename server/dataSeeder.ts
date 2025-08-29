@@ -21,18 +21,12 @@ export class LanguageDataSeeder {
     
     console.log(`=== STARTING AI REQUEST FOR ${count} LANGUAGES ===`);
     
-    const prompt = `Generate ${count} endangered languages as JSON array.
+    const prompt = `Return only a JSON array of ${count} endangered languages. No explanations.
 
-CRITICAL RULES:
-- ONLY return the JSON array, no other text
-- Use simple words only (no quotes, apostrophes, or special characters)
-- Keep all text fields short and simple
-- Use underscores instead of spaces
+Format:
+[{"name":"Ainu","nativeName":"Aynu itak","region":"Asia","country":"Japan","speakers":2,"threatLevel":"critically_endangered","family":"Isolate","description":"Indigenous Hokkaido language"},{"name":"Yagan","nativeName":"Yaghan","region":"South America","country":"Chile","speakers":1,"threatLevel":"critically_endangered","family":"Yaghan","description":"Fuegian archipelago language"}]
 
-Required format:
-[{"name":"Simple_Name","nativeName":"Native_Name","region":"Asia","country":"CountryName","speakers":100,"threatLevel":"endangered","family":"Language_Family","description":"Simple_description_here"}]
-
-Generate ${count} real endangered languages following this exact pattern.`;
+Generate exactly ${count} different real endangered languages in this format. Only return the JSON array.`;
 
     try {
       const response = await anthropic.messages.create({
