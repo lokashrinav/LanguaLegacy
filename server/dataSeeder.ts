@@ -21,14 +21,18 @@ export class LanguageDataSeeder {
     
     console.log(`=== STARTING AI REQUEST FOR ${count} LANGUAGES ===`);
     
-    const prompt = `Generate ${count} endangered languages. Return ONLY valid JSON array. No explanations, no markdown.
+    const prompt = `Generate ${count} endangered languages as JSON array.
 
-CRITICAL: Use single words or short phrases only. No quotes inside text. No newlines.
+CRITICAL RULES:
+- ONLY return the JSON array, no other text
+- Use simple words only (no quotes, apostrophes, or special characters)
+- Keep all text fields short and simple
+- Use underscores instead of spaces
 
-Example format:
-[{"name":"Ainu","nativeName":"Aynu","region":"Asia","country":"Japan","speakers":2,"threatLevel":"critically_endangered","family":"Isolate","iso639Code":"ain","writingSystem":"Latin","description":"Indigenous language of Japan","alphabet":"Latin script","basicVocabulary":"kamuy=god, cise=house, seta=dog","grammarOverview":"SOV word order, agglutinative","commonPhrases":"irankarapte=hello, iyayraykere=thank you","culturalContext":"Sacred bear ceremonies and oral traditions"}]
+Required format:
+[{"name":"Simple_Name","nativeName":"Native_Name","region":"Asia","country":"CountryName","speakers":100,"threatLevel":"endangered","family":"Language_Family","description":"Simple_description_here"}]
 
-Generate exactly this format for ${count} different real endangered languages. No extra text.`;
+Generate ${count} real endangered languages following this exact pattern.`;
 
     try {
       const response = await anthropic.messages.create({
@@ -47,19 +51,52 @@ Generate exactly this format for ${count} different real endangered languages. N
       console.log(content.text);
       console.log('=== END RAW RESPONSE ===');
       
-      // Clean the response text - remove markdown code blocks if present
+      // Clean the response text more thoroughly
       let cleanText = content.text.trim();
+      
+      // Remove markdown code blocks
       if (cleanText.startsWith('```json')) {
         cleanText = cleanText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
       } else if (cleanText.startsWith('```')) {
         cleanText = cleanText.replace(/^```\s*/, '').replace(/\s*```$/, '');
+      }
+      
+      // Remove any text before the first [ or after the last ]
+      const firstBracket = cleanText.indexOf('[');
+      const lastBracket = cleanText.lastIndexOf(']');
+      if (firstBracket >= 0 && lastBracket > firstBracket) {
+        cleanText = cleanText.substring(firstBracket, lastBracket + 1);
       }
 
       console.log('=== CLEANED TEXT ===');
       console.log(cleanText);
       console.log('=== END CLEANED ===');
 
-      const languagesData = JSON.parse(cleanText) as InsertLanguage[];
+      let languagesData: InsertLanguage[];
+      
+      try {
+        languagesData = JSON.parse(cleanText) as InsertLanguage[];
+      } catch (parseError) {
+        console.log('=== JSON PARSE FAILED, ATTEMPTING FIXES ===');
+        
+        // Try fixing common JSON issues
+        let fixedText = cleanText
+          // Fix unescaped quotes in strings
+          .replace(/(?<!\\)"/g, '\\"')
+          // Fix the escaped quotes we just created at property boundaries
+          .replace(/\\"/g, '"')
+          .replace(/("\w+":"|"\w+":)/g, (match) => match.replace(/\\"/g, '"'))
+          // Fix trailing commas
+          .replace(/,(\s*[}\]])/g, '$1');
+          
+        try {
+          languagesData = JSON.parse(fixedText) as InsertLanguage[];
+          console.log('=== JSON FIXED SUCCESSFULLY ===');
+        } catch (secondError) {
+          console.log('=== STILL FAILED, TRYING SIMPLER PARSING ===');
+          throw new Error(`JSON parsing failed: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`);
+        }
+      }
       
       // Validate the data structure
       if (!Array.isArray(languagesData)) {
