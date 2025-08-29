@@ -12,7 +12,7 @@ export default function Discover() {
   const [region, setRegion] = useState("");
   const [threatLevel, setThreatLevel] = useState("");
 
-  const { data: languages, isLoading } = useQuery({
+  const { data: languages, isLoading } = useQuery<any[]>({
     queryKey: ["/api/languages", { search, region, threatLevel, limit: 50 }],
     enabled: true,
   });

@@ -9,11 +9,18 @@ import { Bot, Settings, Mic, BookOpen, TrendingUp } from "lucide-react";
 export default function Home() {
   const { user } = useAuth();
   
-  const { data: userStats, isLoading: statsLoading } = useQuery({
+  const { data: userStats, isLoading: statsLoading } = useQuery<{
+    totalContributions: number;
+    audioContributions: number;
+    translations: number;
+    lessonsCompleted: number;
+    currentStreak: number;
+    languages: string[];
+  }>({
     queryKey: ["/api/user/stats"],
   });
 
-  const { data: recentLanguages, isLoading: languagesLoading } = useQuery({
+  const { data: recentLanguages, isLoading: languagesLoading } = useQuery<any[]>({
     queryKey: ["/api/languages"],
     enabled: true,
   });

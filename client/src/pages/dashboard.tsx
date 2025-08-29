@@ -27,22 +27,34 @@ export default function Dashboard() {
     }
   }, [isAuthenticated, authLoading, toast]);
 
-  const { data: userStats, isLoading: statsLoading } = useQuery({
+  const { data: userStats, isLoading: statsLoading } = useQuery<{
+    totalContributions: number;
+    audioContributions: number;
+    translations: number;
+    lessonsCompleted: number;
+    currentStreak: number;
+    languages: string[];
+  }>({
     queryKey: ["/api/user/stats"],
     enabled: isAuthenticated,
   });
 
-  const { data: contributionStats, isLoading: contributionStatsLoading } = useQuery({
+  const { data: contributionStats, isLoading: contributionStatsLoading } = useQuery<{
+    total: number;
+    audioContributions: number;
+    translations: number;
+    approved: number;
+  }>({
     queryKey: ["/api/user/contributions/stats"],
     enabled: isAuthenticated,
   });
 
-  const { data: recentContributions, isLoading: contributionsLoading } = useQuery({
-    queryKey: ["/api/contributions", { userId: user?.id, limit: 5 }],
+  const { data: recentContributions, isLoading: contributionsLoading } = useQuery<any[]>({
+    queryKey: ["/api/contributions", user?.id, { limit: 5 }],
     enabled: isAuthenticated && !!user?.id,
   });
 
-  const { data: learningProgress, isLoading: progressLoading } = useQuery({
+  const { data: learningProgress, isLoading: progressLoading } = useQuery<any[]>({
     queryKey: ["/api/learning-progress"],
     enabled: isAuthenticated,
   });

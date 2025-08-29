@@ -139,22 +139,22 @@ export class DatabaseStorage implements IStorage {
       conditions.push(eq(languages.threatLevel, params.threatLevel));
     }
 
-    let baseQuery = db.select().from(languages);
+    let query = db.select().from(languages);
 
     if (conditions.length > 0) {
-      baseQuery = baseQuery.where(and(...conditions));
+      query = query.where(and(...conditions));
     }
 
-    let finalQuery = baseQuery.orderBy(asc(languages.name));
+    query = query.orderBy(asc(languages.name));
 
     if (params?.limit) {
-      finalQuery = finalQuery.limit(params.limit);
+      query = query.limit(params.limit);
     }
     if (params?.offset) {
-      finalQuery = finalQuery.offset(params.offset);
+      query = query.offset(params.offset);
     }
 
-    return await finalQuery;
+    return await query;
   }
 
   async getLanguageById(id: string): Promise<Language | undefined> {
@@ -301,7 +301,7 @@ export class DatabaseStorage implements IStorage {
       const lastActivity = new Date(progress.lastActivityAt!);
       const daysSinceLastActivity = Math.floor((now.getTime() - lastActivity.getTime()) / (1000 * 60 * 60 * 24));
 
-      let newStreak = progress.streakDays;
+      let newStreak = progress.streakDays || 0;
       if (daysSinceLastActivity === 1) {
         newStreak += 1;
       } else if (daysSinceLastActivity > 1) {
@@ -388,8 +388,8 @@ export class DatabaseStorage implements IStorage {
       this.getUserLearningProgress(userId),
     ]);
 
-    const currentStreak = Math.max(...progressData.map(p => p.streakDays), 0);
-    const languages = [...new Set(progressData.map(p => p.languageId))];
+    const currentStreak = Math.max(...progressData.map(p => p.streakDays || 0), 0);
+    const languages = Array.from(new Set(progressData.map(p => p.languageId)));
 
     return {
       totalContributions: contributionStats.total,
