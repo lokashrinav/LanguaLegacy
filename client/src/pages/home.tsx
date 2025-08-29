@@ -91,7 +91,7 @@ export default function Home() {
           {/* Quick Actions */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <Link href="/learn" className="w-full">
-              <Card className="border-2 hover:shadow-lg transition-all cursor-pointer group bg-white" 
+              <Card className="border-2 hover:shadow-lg transition-all cursor-pointer group" 
                     style={{borderColor: 'hsl(25 25% 80%)'}}>
                 <CardHeader>
                   <div className="flex items-center space-x-3">
