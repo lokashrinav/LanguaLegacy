@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, signInWithRedirect, GoogleAuthProvider, getRedirectResult } from "firebase/auth";
+import { getAuth, signInWithRedirect, signInWithPopup, GoogleAuthProvider, getRedirectResult } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -29,15 +29,27 @@ export function initFirebase() {
   }
 }
 
-export function googleLogin() {
+export async function googleLogin() {
   if (!auth) {
     console.error("Firebase not initialized");
-    return;
+    return null;
   }
   
-  console.log("Starting Google sign-in with redirect...");
+  console.log("Starting Google sign-in with popup...");
   const provider = new GoogleAuthProvider();
-  signInWithRedirect(auth, provider);
+  
+  try {
+    const result = await signInWithPopup(auth, provider);
+    console.log("✅ Google popup login successful:", {
+      user: !!result.user,
+      email: result.user?.email,
+      uid: result.user?.uid
+    });
+    return result;
+  } catch (error) {
+    console.error("❌ Google popup login failed:", error);
+    throw error;
+  }
 }
 
 export function handleGoogleRedirect() {

@@ -163,7 +163,7 @@ export default function AuthPage() {
     registerMutation.mutate(data);
   };
 
-  const handleGoogleLogin = () => {
+  const handleGoogleLogin = async () => {
     console.log("=== Google login button clicked ===");
     const hasFirebaseConfig = import.meta.env.VITE_FIREBASE_API_KEY && 
                              import.meta.env.VITE_FIREBASE_APP_ID && 
@@ -183,14 +183,47 @@ export default function AuthPage() {
 
     try {
       console.log("Calling googleLogin()...");
-      googleLogin();
+      const result = await googleLogin();
+      
+      if (result && result.user) {
+        console.log("Processing Google popup result for user:", result.user.email);
+        try {
+          const idToken = await result.user.getIdToken();
+          console.log("Got ID token, sending to backend...");
+          const res = await apiRequest("POST", "/api/auth/google", { idToken });
+          
+          if (res.ok) {
+            queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+            toast({
+              title: "Welcome!",
+              description: "You have successfully signed in with Google.",
+            });
+            setLocation("/");
+          }
+        } catch (backendError) {
+          console.error("Backend authentication error:", backendError);
+          toast({
+            title: "Google Login Failed",
+            description: "Failed to complete Google sign-in. Please try again.",
+            variant: "destructive",
+          });
+        }
+      }
     } catch (error) {
       console.error("Error in handleGoogleLogin:", error);
-      toast({
-        title: "Google Login Error",
-        description: "Failed to initiate Google login. Please try again.",
-        variant: "destructive",
-      });
+      if (error.code === 'auth/popup-closed-by-user') {
+        toast({
+          title: "Google Login Cancelled",
+          description: "You cancelled the Google sign-in process.",
+          variant: "default",
+        });
+      } else {
+        toast({
+          title: "Google Login Error",
+          description: "Failed to initiate Google login. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
