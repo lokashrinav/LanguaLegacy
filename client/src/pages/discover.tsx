@@ -13,7 +13,18 @@ export default function Discover() {
   const [threatLevel, setThreatLevel] = useState("all");
 
   const { data: languages, isLoading } = useQuery<any[]>({
-    queryKey: ["/api/languages", { search, region, threatLevel, limit: 50 }],
+    queryKey: ["/api/languages", search, region, threatLevel],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (search) params.append('search', search);
+      if (region && region !== 'all') params.append('region', region);
+      if (threatLevel && threatLevel !== 'all') params.append('threatLevel', threatLevel);
+      params.append('limit', '50');
+      
+      const response = await fetch(`/api/languages?${params.toString()}`);
+      if (!response.ok) throw new Error('Failed to fetch languages');
+      return response.json();
+    },
     enabled: true,
   });
 
