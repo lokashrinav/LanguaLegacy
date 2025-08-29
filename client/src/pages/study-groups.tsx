@@ -378,7 +378,7 @@ export default function StudyGroups() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="discover" className="space-y-4 animate-fade-in">
+        <TabsContent value="discover" className="space-y-4" forceMount>
           <div className="flex gap-4 mb-6">
             <Input
               placeholder="Search study groups..."
@@ -412,7 +412,7 @@ export default function StudyGroups() {
           )}
         </TabsContent>
 
-        <TabsContent value="my-groups" className="space-y-4 animate-fade-in">
+        <TabsContent value="my-groups" className="space-y-4" forceMount>
           {!user ? (
             <Card className="py-12 text-center">
               <CardContent>
