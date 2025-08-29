@@ -84,6 +84,7 @@ export default function StudyGroupWorkspace() {
   const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
   const [isGoalDialogOpen, setIsGoalDialogOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<GroupTask | null>(null);
+  const [activeTab, setActiveTab] = useState("tasks");
 
   const taskForm = useForm<z.infer<typeof createTaskSchema>>({
     resolver: zodResolver(createTaskSchema),
@@ -355,7 +356,7 @@ export default function StudyGroupWorkspace() {
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <Tabs defaultValue="tasks" className="space-y-4">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
             <TabsList className="grid grid-cols-3 w-full">
               <TabsTrigger value="tasks">Tasks</TabsTrigger>
               <TabsTrigger value="goals">Goals</TabsTrigger>

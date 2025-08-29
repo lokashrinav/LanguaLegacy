@@ -86,6 +86,8 @@ export default function AdminPage() {
   const [selectedThreatLevels, setSelectedThreatLevels] = useState<string[]>([]);
   const { user, isLoading: authLoading } = useAuth();
   const [, setLocation] = useLocation();
+  const [mainTab, setMainTab] = useState("manual");
+  const [formTab, setFormTab] = useState("basic");
 
   // Check if user is authorized
   useEffect(() => {
@@ -380,7 +382,7 @@ export default function AdminPage() {
           </p>
         </div>
 
-        <Tabs defaultValue="manual" className="w-full">
+        <Tabs value={mainTab} onValueChange={setMainTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-8">
             <TabsTrigger value="manual" className="flex items-center gap-2">
               <Plus className="h-4 w-4" />
@@ -423,7 +425,7 @@ export default function AdminPage() {
               <CardContent>
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    <Tabs defaultValue="basic" className="w-full">
+                    <Tabs value={formTab} onValueChange={setFormTab} className="w-full">
                       <TabsList className="grid w-full grid-cols-6">
                         <TabsTrigger value="basic" className="flex items-center gap-1">
                           <Globe className="h-3 w-3" />

@@ -69,6 +69,7 @@ export default function StudyGroups() {
   const { toast } = useToast();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("discover");
 
   const form = useForm<z.infer<typeof createGroupSchema>>({
     resolver: zodResolver(createGroupSchema),
@@ -370,7 +371,7 @@ export default function StudyGroups() {
         )}
       </div>
 
-      <Tabs defaultValue="discover" className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full max-w-md grid-cols-2">
           <TabsTrigger value="discover">Discover Groups</TabsTrigger>
           <TabsTrigger value="my-groups" disabled={!user}>
