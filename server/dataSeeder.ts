@@ -19,6 +19,8 @@ export class LanguageDataSeeder {
   async generateEndangeredLanguagesData(request: LanguageDataRequest = {}): Promise<InsertLanguage[]> {
     const { count = 50, regions = [], threatLevels = [] } = request;
     
+    console.log(`=== STARTING AI REQUEST FOR ${count} LANGUAGES ===`);
+    
     const prompt = `Generate ${count} endangered languages. Return ONLY valid JSON array. No explanations, no markdown.
 
 CRITICAL: Use single words or short phrases only. No quotes inside text. No newlines.
