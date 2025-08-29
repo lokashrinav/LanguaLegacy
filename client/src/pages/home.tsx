@@ -114,8 +114,7 @@ export default function Home() {
 
             <Card className="hover:shadow-lg transition-shadow bg-white" data-testid="card-contribute">
               <CardHeader>
-                <CardTitle className="flex items-center">
-                  <i className="fas fa-microphone text-accent mr-2"></i>
+                <CardTitle>
                   Contribute Content
                 </CardTitle>
               </CardHeader>
@@ -133,8 +132,7 @@ export default function Home() {
 
             <Card className="hover:shadow-lg transition-shadow bg-white" data-testid="card-discover">
               <CardHeader>
-                <CardTitle className="flex items-center">
-                  <i className="fas fa-search text-primary mr-2"></i>
+                <CardTitle>
                   Discover Languages
                 </CardTitle>
               </CardHeader>
