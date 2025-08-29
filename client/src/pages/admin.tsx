@@ -239,7 +239,7 @@ export default function AdminPage() {
     },
   });
 
-  // Generate missing courses mutation
+  // Generate missing courses mutation (one at a time)
   const generateMissingCoursesMutation = useMutation({
     mutationFn: async () => {
       const res = await apiRequest("POST", "/api/admin/generate-missing-courses");
@@ -248,16 +248,33 @@ export default function AdminPage() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/lessons"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/database-summary"] });
-      toast({
-        title: "AI Courses Generated!",
-        description: `Successfully generated courses for ${data.generated} languages. ${data.skipped} languages already had courses.`,
-        duration: 5000,
-      });
+      queryClient.invalidateQueries({ queryKey: ["/api/languages"] });
+      
+      if (data.generated > 0) {
+        toast({
+          title: "Course Generated!",
+          description: `Successfully generated course for ${data.languageName}. ${data.remaining} languages still need courses.`,
+          duration: 5000,
+        });
+      } else if (data.errors > 0) {
+        toast({
+          title: "Generation Failed",
+          description: `Failed to generate course for ${data.languageName}. ${data.error || 'Please try again.'}`,
+          variant: "destructive",
+          duration: 5000,
+        });
+      } else {
+        toast({
+          title: "All Courses Complete!",
+          description: "All languages now have AI-generated courses.",
+          duration: 5000,
+        });
+      }
     },
     onError: (error: Error) => {
       toast({
         title: "Generation Failed",
-        description: "Failed to generate AI courses. Please try again.",
+        description: "Failed to generate AI course. Please try again.",
         variant: "destructive",
       });
       console.error("Error generating courses:", error);
@@ -1011,7 +1028,7 @@ export default function AdminPage() {
                     AI Course Generation
                   </CardTitle>
                   <CardDescription>
-                    Automatically generate comprehensive AI-powered courses for all languages that don't have lessons yet.
+                    Generate AI-powered courses one language at a time. Click the button to generate a course for the next language that needs one.
                     Each course includes 8 lessons with authentic vocabulary, cultural context, and progressive difficulty.
                   </CardDescription>
                 </CardHeader>
@@ -1033,12 +1050,12 @@ export default function AdminPage() {
                       {generateMissingCoursesMutation.isPending ? (
                         <>
                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                          Generating Courses...
+                          Generating Course...
                         </>
                       ) : (
                         <>
                           <Sparkles className="h-4 w-4" />
-                          Generate AI Courses for All Languages
+                          Generate Course for Next Language
                         </>
                       )}
                     </Button>
