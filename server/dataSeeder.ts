@@ -69,7 +69,25 @@ Return only valid JSON array:`;
         cleanText = cleanText.replace(/^```\s*/, '').replace(/\s*```$/, '');
       }
 
-      const languagesData = JSON.parse(cleanText) as InsertLanguage[];
+      // Try to fix common JSON issues
+      cleanText = cleanText.replace(/[\u0000-\u001F\u007F-\u009F]/g, ''); // Remove control characters
+      cleanText = cleanText.replace(/\\/g, '\\\\'); // Escape backslashes
+      cleanText = cleanText.replace(/"/g, '\\"'); // Escape quotes
+      cleanText = cleanText.replace(/\\"/g, '"'); // Fix over-escaping
+      cleanText = cleanText.replace(/\\"([^"]*?)\\"/g, '"$1"'); // Fix property names
+
+      let languagesData: InsertLanguage[];
+      try {
+        languagesData = JSON.parse(cleanText) as InsertLanguage[];
+      } catch (parseError) {
+        // If parsing fails, try to extract JSON manually
+        const arrayMatch = cleanText.match(/\[[\s\S]*\]/);
+        if (arrayMatch) {
+          languagesData = JSON.parse(arrayMatch[0]) as InsertLanguage[];
+        } else {
+          throw parseError;
+        }
+      }
       
       // Validate the data structure
       if (!Array.isArray(languagesData)) {
