@@ -14,6 +14,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   setupAuth(app);
 
+  // Admin authorization middleware
+  const isAdmin = (req: any, res: any, next: any) => {
+    if (!req.user || req.user.email !== 'lokashrinav@gmail.com') {
+      return res.status(403).json({ message: "Unauthorized: Admin access only" });
+    }
+    next();
+  };
+
   // Language routes
   app.get('/api/languages', async (req, res) => {
     try {
@@ -47,7 +55,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/languages', isAuthenticated, async (req, res) => {
+  app.post('/api/languages', isAuthenticated, isAdmin, async (req, res) => {
     try {
       const languageData = insertLanguageSchema.parse(req.body);
       const language = await storage.createLanguage(languageData);
@@ -70,7 +78,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/languages/:id', isAuthenticated, async (req, res) => {
+  app.delete('/api/languages/:id', isAuthenticated, isAdmin, async (req, res) => {
     try {
       await storage.deleteLanguage(req.params.id);
       res.json({ message: "Language deleted successfully" });
@@ -117,7 +125,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Database seeding routes
-  app.post('/api/admin/seed-languages', isAuthenticated, async (req, res) => {
+  app.post('/api/admin/seed-languages', isAuthenticated, isAdmin, async (req, res) => {
     try {
       const { LanguageDataSeeder } = await import('./dataSeeder');
       
@@ -144,7 +152,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin: Generate missing courses endpoint
-  app.post('/api/admin/generate-missing-courses', isAuthenticated, async (req, res) => {
+  app.post('/api/admin/generate-missing-courses', isAuthenticated, isAdmin, async (req, res) => {
     try {
       const { LanguageDataSeeder } = await import('./dataSeeder');
       const languages = await storage.getLanguages();
@@ -185,7 +193,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/admin/database-summary', isAuthenticated, async (req, res) => {
+  app.get('/api/admin/database-summary', isAuthenticated, isAdmin, async (req, res) => {
     try {
       const languages = await storage.getLanguages();
       

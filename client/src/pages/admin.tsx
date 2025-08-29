@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,8 +14,10 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Plus, Globe, BookOpen, Users, Archive, Map, Settings, Database, Sparkles } from "lucide-react";
+import { Trash2, Plus, Globe, BookOpen, Users, Archive, Map, Settings, Database, Sparkles, Lock } from "lucide-react";
 import DatabaseSeeding from "@/components/DatabaseSeeding";
+import { useAuth } from "@/hooks/useAuth";
+import { useLocation } from "wouter";
 
 const languageFormSchema = z.object({
   // Basic Information
@@ -82,6 +84,20 @@ export default function AdminPage() {
   const [seedingCount, setSeedingCount] = useState(50);
   const [selectedRegions, setSelectedRegions] = useState<string[]>([]);
   const [selectedThreatLevels, setSelectedThreatLevels] = useState<string[]>([]);
+  const { user, isLoading: authLoading } = useAuth();
+  const [, setLocation] = useLocation();
+
+  // Check if user is authorized
+  useEffect(() => {
+    if (!authLoading && (!user || user.email !== 'lokashrinav@gmail.com')) {
+      toast({
+        title: "Unauthorized Access",
+        description: "You don't have permission to access this page.",
+        variant: "destructive",
+      });
+      setLocation('/');
+    }
+  }, [user, authLoading, toast, setLocation]);
 
   const form = useForm<LanguageFormData>({
     resolver: zodResolver(languageFormSchema),
@@ -303,6 +319,37 @@ export default function AdminPage() {
   const onSubmit = (data: LanguageFormData) => {
     createLanguageMutation.mutate(data);
   };
+
+  // Show loading state while checking auth
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background p-4 animate-fade-in flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Checking authorization...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render admin content if not authorized
+  if (!user || user.email !== 'lokashrinav@gmail.com') {
+    return (
+      <div className="min-h-screen bg-background p-4 animate-fade-in flex items-center justify-center">
+        <Card className="max-w-md w-full">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-destructive">
+              <Lock className="h-5 w-5" />
+              Access Denied
+            </CardTitle>
+            <CardDescription>
+              You don't have permission to access the admin panel.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-4 animate-fade-in">
