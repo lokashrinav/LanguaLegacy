@@ -110,16 +110,24 @@ export function setupAuth(app: Express) {
           username: user.username || undefined,
         };
         
-        // Set userId in session
-        req.session.userId = user.id;
-        
-        // Force save the session
-        req.session.save((saveErr) => {
-          if (saveErr) {
-            console.error("Session save error:", saveErr);
-            return res.status(500).json({ error: "Failed to save session" });
+        // Regenerate session for security and proper saving
+        req.session.regenerate((regenErr) => {
+          if (regenErr) {
+            console.error("[Replit Auth] Session regenerate error:", regenErr);
+            return res.status(500).json({ error: "Failed to regenerate session" });
           }
-          res.json(req.user);
+          
+          // Set userId in the new session
+          req.session.userId = user.id;
+          
+          // Force save the session
+          req.session.save((saveErr) => {
+            if (saveErr) {
+              console.error("Session save error:", saveErr);
+              return res.status(500).json({ error: "Failed to save session" });
+            }
+            res.json(req.user);
+          });
         });
       } catch (error) {
         console.error('Replit auth error:', error);
@@ -172,16 +180,24 @@ export function setupAuth(app: Express) {
         profileImageUrl: user.profileImageUrl || undefined,
       };
 
-      // Set userId in session
-      req.session.userId = user.id;
-      
-      // Force save the session
-      req.session.save((saveErr) => {
-        if (saveErr) {
-          console.error("Session save error:", saveErr);
-          return res.status(500).json({ message: "Failed to save session" });
+      // Regenerate session for security and proper saving
+      req.session.regenerate((regenErr) => {
+        if (regenErr) {
+          console.error("[Register] Session regenerate error:", regenErr);
+          return res.status(500).json({ message: "Failed to regenerate session" });
         }
-        res.status(201).json(req.user);
+        
+        // Set userId in the new session
+        req.session.userId = user.id;
+        
+        // Force save the session
+        req.session.save((saveErr) => {
+          if (saveErr) {
+            console.error("Session save error:", saveErr);
+            return res.status(500).json({ message: "Failed to save session" });
+          }
+          res.status(201).json(req.user);
+        });
       });
     } catch (error) {
       console.error("Registration error:", error);
@@ -224,16 +240,24 @@ export function setupAuth(app: Express) {
         profileImageUrl: user.profileImageUrl || undefined,
       };
 
-      // Set userId in session
-      req.session.userId = user.id;
-      
-      // Force save the session
-      req.session.save((saveErr) => {
-        if (saveErr) {
-          console.error("Session save error:", saveErr);
-          return res.status(500).json({ message: "Failed to save session" });
+      // Regenerate session for security and proper saving
+      req.session.regenerate((regenErr) => {
+        if (regenErr) {
+          console.error("[Login] Session regenerate error:", regenErr);
+          return res.status(500).json({ message: "Failed to regenerate session" });
         }
-        res.json(req.user);
+        
+        // Set userId in the new session
+        req.session.userId = user.id;
+        
+        // Force save the session
+        req.session.save((saveErr) => {
+          if (saveErr) {
+            console.error("Session save error:", saveErr);
+            return res.status(500).json({ message: "Failed to save session" });
+          }
+          res.json(req.user);
+        });
       });
     } catch (error) {
       console.error("Login error:", error);
@@ -312,27 +336,35 @@ export function setupAuth(app: Express) {
         profileImageUrl: user.profileImageUrl || undefined,
       };
 
-      // Set userId in session
-      req.session.userId = user.id;
-      
-      // Log for debugging
-      console.log("[Auth Debug] Google auth successful for user:", user.email);
-      console.log("[Auth Debug] Session ID:", req.sessionID);
-      console.log("[Auth Debug] Setting userId:", user.id);
-      
-      // Force save the session with callback
-      req.session.save((saveErr) => {
-        if (saveErr) {
-          console.error("[Auth Debug] Session save error:", saveErr);
-          return res.status(500).json({ error: "Failed to save session", details: saveErr.message });
+      // Regenerate session to ensure proper saving in production
+      req.session.regenerate((regenErr) => {
+        if (regenErr) {
+          console.error("[Auth Debug] Session regenerate error:", regenErr);
+          return res.status(500).json({ error: "Failed to regenerate session" });
         }
-        console.log("[Auth Debug] Session saved successfully");
-        console.log("[Auth Debug] Session data after save:", { 
-          sessionId: req.sessionID,
-          userId: req.session.userId,
-          cookie: req.session.cookie
+        
+        // Set userId in the new session
+        req.session.userId = user.id;
+        
+        // Log for debugging
+        console.log("[Auth Debug] Google auth successful for user:", user.email);
+        console.log("[Auth Debug] New Session ID:", req.sessionID);
+        console.log("[Auth Debug] Setting userId:", user.id);
+        
+        // Force save the session with callback
+        req.session.save((saveErr) => {
+          if (saveErr) {
+            console.error("[Auth Debug] Session save error:", saveErr);
+            return res.status(500).json({ error: "Failed to save session", details: saveErr.message });
+          }
+          console.log("[Auth Debug] Session saved successfully");
+          console.log("[Auth Debug] Session data after save:", { 
+            sessionId: req.sessionID,
+            userId: req.session.userId,
+            cookie: req.session.cookie
+          });
+          res.json(req.user);
         });
-        res.json(req.user);
       });
     } catch (error) {
       console.error("Google auth error:", error);
