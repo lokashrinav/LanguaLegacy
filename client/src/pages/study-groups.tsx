@@ -69,6 +69,7 @@ export default function StudyGroups() {
   const { toast } = useToast();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("discover");
 
   const form = useForm<z.infer<typeof createGroupSchema>>({
     resolver: zodResolver(createGroupSchema),
@@ -370,80 +371,99 @@ export default function StudyGroups() {
         )}
       </div>
 
-      <Tabs defaultValue="discover" className="space-y-6">
-        <TabsList className="grid w-full max-w-md grid-cols-2">
-          <TabsTrigger value="discover">Discover Groups</TabsTrigger>
-          <TabsTrigger value="my-groups" disabled={!user}>
+      {/* Custom tab implementation to prevent flickering */}
+      <div className="space-y-6">
+        <div className="inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground max-w-md w-full">
+          <button
+            className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 flex-1 ${
+              activeTab === "discover" ? "bg-background text-foreground shadow-sm" : ""
+            }`}
+            onClick={() => setActiveTab("discover")}
+            data-testid="tab-discover"
+          >
+            Discover Groups
+          </button>
+          <button
+            className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 flex-1 ${
+              activeTab === "my-groups" ? "bg-background text-foreground shadow-sm" : ""
+            } ${!user ? "opacity-50 cursor-not-allowed" : ""}`}
+            onClick={() => user && setActiveTab("my-groups")}
+            disabled={!user}
+            data-testid="tab-my-groups"
+          >
             My Groups
-          </TabsTrigger>
-        </TabsList>
+          </button>
+        </div>
 
-        <TabsContent value="discover" className="space-y-4" forceMount>
-          <div className="flex gap-4 mb-6">
-            <Input
-              placeholder="Search study groups..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="max-w-sm"
-              data-testid="input-search"
-            />
+        {/* Tab panels with visibility toggle */}
+        <div className="relative">
+          <div className={`space-y-4 ${activeTab === "discover" ? "" : "hidden"}`}>
+            <div className="flex gap-4 mb-6">
+              <Input
+                placeholder="Search study groups..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="max-w-sm"
+                data-testid="input-search"
+              />
+            </div>
+
+            {loadingPublic ? (
+              <div className="text-center py-8 loading-fade">Loading study groups...</div>
+            ) : filteredPublicGroups.length === 0 ? (
+              <Card className="py-12 text-center">
+                <CardContent>
+                  <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-lg font-medium">No study groups found</p>
+                  <p className="text-muted-foreground mt-2">
+                    {user
+                      ? "Be the first to create a study group for collaborative learning!"
+                      : "Sign in to create or join study groups"}
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2">
+                {filteredPublicGroups.map((group) => (
+                  <GroupCard key={group.id} group={group} showJoinButton />
+                ))}
+              </div>
+            )}
           </div>
 
-          {loadingPublic ? (
-            <div className="text-center py-8 loading-fade">Loading study groups...</div>
-          ) : filteredPublicGroups.length === 0 ? (
-            <Card className="py-12 text-center">
-              <CardContent>
-                <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-lg font-medium">No study groups found</p>
-                <p className="text-muted-foreground mt-2">
-                  {user
-                    ? "Be the first to create a study group for collaborative learning!"
-                    : "Sign in to create or join study groups"}
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2">
-              {filteredPublicGroups.map((group) => (
-                <GroupCard key={group.id} group={group} showJoinButton />
-              ))}
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="my-groups" className="space-y-4" forceMount>
-          {!user ? (
-            <Card className="py-12 text-center">
-              <CardContent>
-                <Lock className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-lg font-medium">Sign in required</p>
-                <p className="text-muted-foreground mt-2">
-                  Please sign in to view your study groups
-                </p>
-              </CardContent>
-            </Card>
-          ) : loadingMyGroups ? (
-            <div className="text-center py-8 loading-fade">Loading your groups...</div>
-          ) : myGroups.length === 0 ? (
-            <Card className="py-12 text-center">
-              <CardContent>
-                <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-lg font-medium">You haven't joined any groups yet</p>
-                <p className="text-muted-foreground mt-2">
-                  Discover and join study groups to start collaborative learning!
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2">
-              {myGroups.map((group) => (
-                <GroupCard key={group.id} group={group} />
-              ))}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
+          <div className={`space-y-4 ${activeTab === "my-groups" ? "" : "hidden"}`}>
+            {!user ? (
+              <Card className="py-12 text-center">
+                <CardContent>
+                  <Lock className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-lg font-medium">Sign in required</p>
+                  <p className="text-muted-foreground mt-2">
+                    Please sign in to view your study groups
+                  </p>
+                </CardContent>
+              </Card>
+            ) : loadingMyGroups ? (
+              <div className="text-center py-8 loading-fade">Loading your groups...</div>
+            ) : myGroups.length === 0 ? (
+              <Card className="py-12 text-center">
+                <CardContent>
+                  <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-lg font-medium">You haven't joined any groups yet</p>
+                  <p className="text-muted-foreground mt-2">
+                    Discover and join study groups to start collaborative learning!
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2">
+                {myGroups.map((group) => (
+                  <GroupCard key={group.id} group={group} />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
       </div>
     </div>
   );
