@@ -9,8 +9,8 @@ import LanguageCard from "@/components/LanguageCard";
 
 export default function Discover() {
   const [search, setSearch] = useState("");
-  const [region, setRegion] = useState("");
-  const [threatLevel, setThreatLevel] = useState("");
+  const [region, setRegion] = useState("all");
+  const [threatLevel, setThreatLevel] = useState("all");
 
   const { data: languages, isLoading } = useQuery<any[]>({
     queryKey: ["/api/languages", { search, region, threatLevel, limit: 50 }],
@@ -63,7 +63,7 @@ export default function Discover() {
                   <SelectValue placeholder="All Regions" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Regions</SelectItem>
+                  <SelectItem value="all">All Regions</SelectItem>
                   {regions.map((r) => (
                     <SelectItem key={r} value={r}>{r}</SelectItem>
                   ))}
@@ -77,7 +77,7 @@ export default function Discover() {
                   <SelectValue placeholder="Threat Level" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Levels</SelectItem>
+                  <SelectItem value="all">All Levels</SelectItem>
                   {threatLevels.map((level) => (
                     <SelectItem key={level.value} value={level.value}>{level.label}</SelectItem>
                   ))}
@@ -86,7 +86,7 @@ export default function Discover() {
             </div>
           </div>
           
-          {(search || region || threatLevel) && (
+          {(search || (region && region !== "all") || (threatLevel && threatLevel !== "all")) && (
             <div className="mt-4 flex items-center gap-2">
               <span className="text-sm text-muted-foreground">Active filters:</span>
               {search && (
@@ -94,12 +94,12 @@ export default function Discover() {
                   Search: {search}
                 </span>
               )}
-              {region && (
+              {region && region !== "all" && (
                 <span className="bg-accent/10 text-accent px-2 py-1 rounded-full text-xs">
                   Region: {region}
                 </span>
               )}
-              {threatLevel && (
+              {threatLevel && threatLevel !== "all" && (
                 <span className="bg-secondary/50 px-2 py-1 rounded-full text-xs">
                   Threat: {threatLevels.find(l => l.value === threatLevel)?.label}
                 </span>
@@ -109,8 +109,8 @@ export default function Discover() {
                 size="sm" 
                 onClick={() => {
                   setSearch("");
-                  setRegion("");
-                  setThreatLevel("");
+                  setRegion("all");
+                  setThreatLevel("all");
                 }}
                 data-testid="button-clear-filters"
               >
@@ -166,8 +166,8 @@ export default function Discover() {
                 variant="outline" 
                 onClick={() => {
                   setSearch("");
-                  setRegion("");
-                  setThreatLevel("");
+                  setRegion("all");
+                  setThreatLevel("all");
                 }}
                 data-testid="button-show-all"
               >

@@ -21,8 +21,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const languages = await storage.getLanguages({
         search: search as string,
-        region: region as string,
-        threatLevel: threatLevel as string,
+        region: region === 'all' ? '' : region as string,
+        threatLevel: threatLevel === 'all' ? '' : threatLevel as string,
         limit: parseInt(limit as string),
         offset: parseInt(offset as string),
       });

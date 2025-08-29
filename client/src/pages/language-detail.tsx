@@ -11,7 +11,7 @@ export default function LanguageDetail() {
   const { id } = useParams();
   
   const { data: language, isLoading, error } = useQuery<any>({
-    queryKey: ["/api/languages", id],
+    queryKey: [`/api/languages/${id}`],
     enabled: !!id,
   });
 
