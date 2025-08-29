@@ -31,7 +31,6 @@ export function setupAuth(app: Express) {
   });
 
   const isProduction = process.env.NODE_ENV === "production";
-  const productionDomain = process.env.REPLIT_DOMAINS?.split(',')[0];
   
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET || "your-secret-key-here",
@@ -43,7 +42,7 @@ export function setupAuth(app: Express) {
       sameSite: isProduction ? "none" : "lax", // Use 'none' for cross-site requests in production
       secure: isProduction, // Use secure cookies in production
       maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
-      domain: isProduction && productionDomain ? `.${productionDomain}` : undefined,
+      // Don't set domain - let the browser handle it automatically
       path: '/',
     },
     name: 'connect.sid', // Explicitly set the session cookie name
