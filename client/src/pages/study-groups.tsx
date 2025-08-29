@@ -69,7 +69,6 @@ export default function StudyGroups() {
   const { toast } = useToast();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState("discover");
 
   const form = useForm<z.infer<typeof createGroupSchema>>({
     resolver: zodResolver(createGroupSchema),
@@ -371,33 +370,15 @@ export default function StudyGroups() {
         )}
       </div>
 
-      {/* Custom tab implementation to prevent flickering */}
-      <div className="space-y-6">
-        <div className="inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground max-w-md w-full">
-          <button
-            className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 flex-1 ${
-              activeTab === "discover" ? "bg-background text-foreground shadow-sm" : ""
-            }`}
-            onClick={() => setActiveTab("discover")}
-            data-testid="tab-discover"
-          >
-            Discover Groups
-          </button>
-          <button
-            className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 flex-1 ${
-              activeTab === "my-groups" ? "bg-background text-foreground shadow-sm" : ""
-            } ${!user ? "opacity-50 cursor-not-allowed" : ""}`}
-            onClick={() => user && setActiveTab("my-groups")}
-            disabled={!user}
-            data-testid="tab-my-groups"
-          >
+      <Tabs defaultValue="discover" className="space-y-6">
+        <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsTrigger value="discover">Discover Groups</TabsTrigger>
+          <TabsTrigger value="my-groups" disabled={!user}>
             My Groups
-          </button>
-        </div>
+          </TabsTrigger>
+        </TabsList>
 
-        {/* Tab panels with smooth transitions */}
-        <div className="relative">
-          <div className={`space-y-4 transition-all duration-200 ${activeTab === "discover" ? "opacity-100 relative" : "opacity-0 absolute inset-0 pointer-events-none"}`}>
+        <TabsContent value="discover" className="space-y-4">
             <div className="flex gap-4 mb-6">
               <Input
                 placeholder="Search study groups..."
@@ -429,9 +410,9 @@ export default function StudyGroups() {
                 ))}
               </div>
             )}
-          </div>
+        </TabsContent>
 
-          <div className={`space-y-4 transition-all duration-200 ${activeTab === "my-groups" ? "opacity-100 relative" : "opacity-0 absolute inset-0 pointer-events-none"}`}>
+        <TabsContent value="my-groups" className="space-y-4">
             {!user ? (
               <Card className="py-12 text-center">
                 <CardContent>
@@ -461,9 +442,8 @@ export default function StudyGroups() {
                 ))}
               </div>
             )}
-          </div>
-        </div>
-      </div>
+        </TabsContent>
+      </Tabs>
       </div>
     </div>
   );
