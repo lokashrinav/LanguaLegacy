@@ -39,7 +39,7 @@ export function setupAuth(app: Express) {
     store: sessionStore,
     cookie: {
       httpOnly: true,
-      sameSite: isProduction ? "none" : "lax", // Use 'none' for cross-site requests in production
+      sameSite: isProduction ? "lax" : "lax", // Use 'lax' for better compatibility
       secure: isProduction, // Use secure cookies in production
       maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
       // Don't set domain - let the browser handle it automatically
@@ -269,6 +269,10 @@ export function setupAuth(app: Express) {
 
       // Set session
       req.session.userId = user.id;
+      console.log("[Auth Debug] Setting userId in session:", user.id);
+      console.log("[Auth Debug] Session ID:", req.sessionID);
+      console.log("[Auth Debug] Session before save:", { userId: req.session.userId });
+      
       req.user = {
         id: user.id,
         email: user.email!,
@@ -283,6 +287,8 @@ export function setupAuth(app: Express) {
           console.error("Session save error:", err);
           return res.status(500).json({ error: "Failed to save session" });
         }
+        console.log("[Auth Debug] Session saved successfully");
+        console.log("[Auth Debug] Session after save:", { userId: req.session.userId });
         res.json(req.user);
       });
     } catch (error) {
@@ -324,12 +330,34 @@ export function setupAuth(app: Express) {
   });
   
   // Test authentication endpoint for production debugging
-  app.get("/api/auth/test", (req: AuthRequest, res: Response) => {
+  app.get("/api/auth/test", async (req: AuthRequest, res: Response) => {
     const headers = req.headers;
+    
+    // Try to retrieve session data from store directly
+    let sessionData = null;
+    if (req.sessionID && sessionStore) {
+      try {
+        sessionData = await new Promise((resolve, reject) => {
+          sessionStore.get(req.sessionID, (err, data) => {
+            if (err) reject(err);
+            else resolve(data);
+          });
+        });
+      } catch (err) {
+        console.error("Error fetching session from store:", err);
+      }
+    }
+    
     res.json({
       sessionId: req.sessionID,
       hasSession: !!req.session,
       userId: req.session?.userId,
+      sessionKeys: req.session ? Object.keys(req.session) : [],
+      sessionFromStore: sessionData ? { 
+        hasUserId: !!(sessionData as any).userId,
+        userId: (sessionData as any).userId,
+        keys: Object.keys(sessionData)
+      } : null,
       isProduction: process.env.NODE_ENV === "production",
       domain: process.env.REPLIT_DOMAINS,
       replId: process.env.REPL_ID,
@@ -341,6 +369,7 @@ export function setupAuth(app: Express) {
       forwardedProto: headers['x-forwarded-proto'],
       cookie: headers.cookie ? 'present' : 'missing',
       sessionCookie: headers.cookie?.includes('connect.sid') ? 'found' : 'not found',
+      cookieValue: headers.cookie?.split('connect.sid=')[1]?.split(';')[0] || 'not found',
     });
   });
 }
