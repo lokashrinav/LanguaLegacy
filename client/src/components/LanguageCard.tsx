@@ -47,11 +47,12 @@ export default function LanguageCard({ language }: LanguageCardProps) {
   };
 
   return (
-    <Card 
-      className="hover:shadow-lg transition-shadow cursor-pointer"
-      data-testid={`language-card-${language.id}`}
-    >
-      <CardContent className="p-6">
+    <Link to={`/language/${language.id}`}>
+      <Card 
+        className="hover:shadow-lg transition-shadow cursor-pointer bg-white"
+        data-testid={`language-card-${language.id}`}
+      >
+        <CardContent className="p-6">
         <div className="flex items-start justify-between mb-4">
           <div>
             <h3 className="text-lg font-semibold text-foreground" data-testid="language-name">
@@ -97,7 +98,7 @@ export default function LanguageCard({ language }: LanguageCardProps) {
           </p>
         )}
         
-        <div className="flex space-x-2">
+        <div className="flex space-x-2" onClick={(e) => e.stopPropagation()}>
           <Link to="/learn" className="flex-1">
             <Button 
               size="sm" 
@@ -120,5 +121,6 @@ export default function LanguageCard({ language }: LanguageCardProps) {
         </div>
       </CardContent>
     </Card>
+    </Link>
   );
 }

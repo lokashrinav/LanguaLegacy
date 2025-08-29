@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import Landing from "@/pages/landing.tsx";
 import Home from "@/pages/home.tsx";
 import Discover from "@/pages/discover.tsx";
+import LanguageDetail from "@/pages/language-detail.tsx";
 import Learn from "@/pages/learn.tsx";
 import Contribute from "@/pages/contribute.tsx";
 import Dashboard from "@/pages/dashboard.tsx";
@@ -29,6 +30,7 @@ function Router() {
         <>
           <Route path="/" component={Home} />
           <Route path="/discover" component={Discover} />
+          <Route path="/language/:id" component={LanguageDetail} />
           <Route path="/learn" component={Learn} />
           <Route path="/contribute" component={Contribute} />
           <Route path="/dashboard" component={Dashboard} />
