@@ -99,13 +99,27 @@
 
 @layer components {
   .nav-link {
-    @apply relative transition-colors duration-300 hover:text-primary;
+    @apply relative transition-all duration-300 hover:text-primary;
   }
 
   .nav-link.active::after {
     @apply absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-sm;
     content: '';
     bottom: -8px;
+    animation: slideIn 0.3s ease-out;
+  }
+  
+  @keyframes slideIn {
+    from {
+      width: 0;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    to {
+      width: 100%;
+      left: 0;
+      transform: translateX(0);
+    }
   }
 
   .progress-bar {
@@ -135,5 +149,26 @@
 
   .quiz-option.incorrect {
     @apply bg-destructive text-destructive-foreground;
+  }
+  
+  /* Page transition animations */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+  
+  /* Route transition wrapper */
+  .route-transition {
+    transition: opacity 0.2s ease-in-out;
   }
 }

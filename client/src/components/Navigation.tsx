@@ -71,8 +71,8 @@ export default function Navigation({ showAuthButton = false }: NavigationProps) 
               {(isAuthenticated ? authenticatedNavItems : navItems).map((item) => (
                 <Link key={item.href} to={item.href}>
                   <span 
-                    className={`nav-link cursor-pointer font-medium px-3 py-2 rounded-md transition-colors duration-200 ${
-                      isActive(item.href) ? 'active bg-primary/10' : ''
+                    className={`nav-link cursor-pointer font-medium px-3 py-2 rounded-md transition-all duration-300 ${
+                      isActive(item.href) ? 'active bg-primary/10' : 'hover:bg-primary/5'
                     }`}
                     style={{ 
                       color: isActive(item.href) ? 'hsl(30 60% 25%)' : 'hsl(30 60% 35%)',

@@ -313,10 +313,10 @@ What language would you like to document today? I'll check our database and ask 
   };
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'hsl(35 40% 96%)' }}>
+    <div className="min-h-screen bg-background">
       <Navigation />
-      <div className="p-4">
-      <div className="max-w-4xl mx-auto">
+      <div className="p-4 animate-fade-in">
+      <div className="max-w-4xl mx-auto transition-all duration-300">
         <div className="text-center mb-6">
           <h1 className="text-3xl font-bold mb-2" style={{ color: 'hsl(25 20% 25%)' }}>
             AI Linguistic Interviewer
