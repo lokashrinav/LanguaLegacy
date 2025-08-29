@@ -52,41 +52,52 @@ export class LanguageDataSeeder {
   "phonotactics": "string (sound combination rules)",
   "allophony": "string (sound variations in different contexts)",
 
-  // VOCABULARY - COMPREHENSIVE WORD LISTS
-  "basicVocabulary": "string (essential 500+ words: body parts, family, numbers, colors, time)",
-  "verbs": "string (comprehensive verb list with meanings and forms)",
-  "nouns": "string (extensive noun vocabulary across all domains)",
-  "adjectives": "string (descriptive words, qualities, characteristics)",
-  "adverbs": "string (manner, time, place, frequency adverbs)",
-  "pronouns": "string (personal, possessive, demonstrative, interrogative pronouns)",
-  "prepositions": "string (spatial, temporal, relational prepositions)",
-  "conjunctions": "string (connecting words, logical relationships)",
-  "interjections": "string (exclamations, emotional expressions)",
-  "functionalWords": "string (particles, auxiliaries, determiners)",
+  // COMPLETE DICTIONARY - EVERY WORD
+  "completeDictionary": "string (ENTIRE vocabulary of the language - thousands of words with definitions, pronunciation, etymology)",
+  "verbsDictionary": "string (ALL verbs with every conjugated form, meanings, usage examples)",
+  "nounsDictionary": "string (ALL nouns with plural forms, case forms, compound forms)",
+  "adjectivesDictionary": "string (ALL adjectives with comparative/superlative forms)",
+  "adverbsDictionary": "string (ALL adverbs with usage contexts)",
+  "pronounsDictionary": "string (ALL pronouns with complete paradigms)",
+  "functionWordsDictionary": "string (ALL particles, prepositions, conjunctions, determiners)",
   
-  // SPECIALIZED VOCABULARY
-  "kinshipTerms": "string (family relationships, clan terms)",
-  "environmentalVocabulary": "string (plants, animals, weather, geography)",
-  "culturalTerms": "string (ceremonies, traditions, beliefs)",
-  "bodyVocabulary": "string (anatomy, health, medical terms)",
-  "foodVocabulary": "string (ingredients, cooking, eating)",
-  "toolsObjects": "string (implements, household items, technology)",
-  "timeTerms": "string (calendar, seasons, time expressions)",
-  "spatialTerms": "string (directions, locations, spatial relationships)",
+  // EXHAUSTIVE SPECIALIZED VOCABULARIES
+  "kinshipTermsComplete": "string (EVERY family relationship term, clan terms, kinship system)",
+  "environmentalVocabularyComplete": "string (ALL plant names, animal names, weather terms, geographic features)",
+  "culturalTermsComplete": "string (ALL ceremony names, tradition terms, belief concepts)",
+  "bodyVocabularyComplete": "string (EVERY body part, health term, medical vocabulary)",
+  "foodVocabularyComplete": "string (ALL food names, cooking terms, eating vocabulary)",
+  "toolsObjectsComplete": "string (EVERY tool name, household item, technology term)",
+  "timeTermsComplete": "string (ALL time expressions, calendar terms, temporal concepts)",
+  "spatialTermsComplete": "string (ALL direction terms, location words, spatial concepts)",
+  "emotionVocabulary": "string (ALL emotion words, feeling expressions, mental states)",
+  "actionVocabulary": "string (ALL action verbs, movement terms, activity words)",
+  "soundVocabulary": "string (ALL sound words, noise terms, acoustic descriptions)",
+  "colorVocabulary": "string (ALL color terms, shade descriptions, visual concepts)",
+  "textureVocabulary": "string (ALL texture words, tactile descriptions)",
+  "tasteSmellVocabulary": "string (ALL taste/smell words, sensory descriptions)",
 
-  // GRAMMAR RULES - COMPLETE SYSTEM
-  "wordOrder": "string (basic sentence structure: SVO, SOV, etc.)",
-  "nounInflection": "string (case system, number, gender marking)",
-  "verbConjugation": "string (tense, aspect, mood, person/number marking)",
-  "pronounSystem": "string (pronoun paradigms, usage rules)",
-  "adjectiveAgreement": "string (how adjectives modify nouns)",
-  "articleSystem": "string (definite/indefinite articles if present)",
-  "possessionRules": "string (how to express ownership)",
-  "questionFormation": "string (how to form questions)",
-  "negationRules": "string (how to make negative statements)",
-  "comparisonRules": "string (comparative and superlative forms)",
-  "compoundWords": "string (how to combine words)",
-  "derivationalMorphology": "string (prefixes, suffixes, word formation)",
+  // COMPLETE GRAMMATICAL SYSTEM - EVERY RULE
+  "completeGrammar": "string (ENTIRE grammatical system with all rules, exceptions, variations)",
+  "morphologyComplete": "string (ALL word formation rules, inflection patterns, morpheme combinations)",
+  "syntaxComplete": "string (ALL sentence structures, phrase types, clause constructions)",
+  "verbConjugationComplete": "string (EVERY verb form, tense, aspect, mood with complete paradigms)",
+  "nounDeclensionComplete": "string (EVERY case form, number form, gender form for all nouns)",
+  "pronounParadigmsComplete": "string (COMPLETE pronoun system with all forms and uses)",
+  "adjectiveInflectionComplete": "string (ALL adjective forms, agreement patterns, positions)",
+  "adverbFormationComplete": "string (ALL adverb types, formation rules, usage patterns)",
+  "wordOrderVariations": "string (ALL possible word orders and their meanings)",
+  "questionFormationComplete": "string (EVERY question type, formation rule, intonation pattern)",
+  "negationSystemComplete": "string (ALL negation methods, scope, double negatives)",
+  "comparisonSystemComplete": "string (ALL comparative structures, superlative forms)",
+  "modalitySystem": "string (ALL modal expressions, possibility, necessity, permission)",
+  "aspectualSystem": "string (ALL aspectual distinctions, temporal relationships)",
+  "evidentialitySystem": "string (ALL evidentiality markers if present)",
+  "honorificSystem": "string (ALL politeness levels, respect markers)",
+  "switchReferenceSystem": "string (ALL switch-reference patterns if present)",
+  "serialVerbConstructions": "string (ALL serial verb patterns if present)",
+  "causativeConstructions": "string (ALL causative forms and meanings)",
+  "passiveConstructions": "string (ALL passive types and formations)",
 
   // SENTENCE PATTERNS & SYNTAX
   "basicSentencePatterns": "string (common sentence structures with examples)",
@@ -106,11 +117,26 @@ export class LanguageDataSeeder {
   "emergencyPhrases": "string (help, medical, urgent situations)",
   "socialPhrases": "string (celebrations, condolences, social interactions)",
 
-  // EXAMPLE TEXTS
-  "sampleSentences": "string (50+ example sentences with translations)",
-  "dialogueExamples": "string (conversation examples)",
-  "traditionalSayings": "string (proverbs, idioms with explanations)",
-  "storytellingExamples": "string (narrative structures, story openings)",
+  // COMPLETE SENTENCE CORPUS - THOUSANDS OF EXAMPLES
+  "allSentencePatterns": "string (EVERY possible sentence type with hundreds of examples each)",
+  "simplesentences": "string (1000+ basic sentences covering all vocabulary)",
+  "complexSentences": "string (500+ complex sentences with subordinate clauses)",
+  "questionSentences": "string (ALL question types with hundreds of examples)",
+  "commandSentences": "string (ALL imperative forms with examples)",
+  "conditionalSentences": "string (ALL conditional constructions with examples)",
+  "negativesentences": "string (ALL negation patterns with examples)",
+  "comparativeSentences": "string (ALL comparison structures with examples)",
+  "temporalSentences": "string (ALL time expressions in sentence form)",
+  "conversationalDialogues": "string (COMPLETE conversations covering all life situations)",
+  "narrativeTexts": "string (COMPLETE stories, myths, legends in the language)",
+  "descriptiveTexts": "string (DETAILED descriptions of objects, places, people)",
+  "proceduralTexts": "string (COMPLETE instructions, recipes, how-to guides)",
+  "argumentativeTexts": "string (COMPLETE debates, discussions, persuasive texts)",
+  "poeticTexts": "string (ALL traditional poems, songs, chants)",
+  "ceremonialTexts": "string (COMPLETE ritual texts, prayers, formal speeches)",
+  "everydayPhrases": "string (THOUSANDS of daily expressions, social interactions)",
+  "idiomaticExpressions": "string (ALL idioms, proverbs, fixed expressions with explanations)",
+  "technicalTerminology": "string (SPECIALIZED vocabulary for trades, crafts, skills)",
 
   // PRONUNCIATION GUIDE
   "pronunciationRules": "string (how to pronounce written words)",
@@ -132,9 +158,12 @@ Requirements:
 - Focus on genuine endangered languages from UNESCO Atlas and Ethnologue
 - Include diverse languages from all continents
 - Mix different threat levels (vulnerable to extinct)
-- Provide accurate speaker counts and geographic data
-- Make cultural significance detailed and specific
-- Ensure linguistic details are authentic
+- Provide EXHAUSTIVE linguistic content - thousands of words, hundreds of grammar rules, complete sentence corpora
+- Include EVERY possible word, phrase, sentence pattern, grammatical construction
+- Make this a COMPLETE linguistic reference that could teach someone the entire language
+- Provide authentic, comprehensive data that preserves the FULL language system
+
+CRITICAL: Generate MASSIVE amounts of linguistic content - this should be complete language documentation with thousands of entries per field.
 
 Return ONLY a valid JSON array of objects, no additional text.`;
 
