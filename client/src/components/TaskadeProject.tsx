@@ -38,7 +38,8 @@ export function TaskadeProjectCard({
 
   const createProjectMutation = useMutation({
     mutationFn: async () => {
-      return await apiRequest(`/api/languages/${languageId}/taskade-project`, 'POST');
+      const response = await apiRequest('POST', `/api/languages/${languageId}/taskade-project`);
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ 
