@@ -143,6 +143,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin: Generate missing courses endpoint
+  app.post('/api/admin/generate-missing-courses', isAuthenticated, async (req, res) => {
+    try {
+      const { LanguageDataSeeder } = await import('./dataSeeder');
+      const languages = await storage.getLanguages();
+      const seeder = new LanguageDataSeeder();
+      let generated = 0;
+      let skipped = 0;
+      let errors = 0;
+
+      for (const language of languages) {
+        try {
+          // Check if language already has lessons
+          const existingLessons = await storage.getLessons(language.id);
+          if (existingLessons && existingLessons.length > 0) {
+            skipped++;
+            continue;
+          }
+
+          // Generate AI course for this language
+          console.log(`Generating AI course for ${language.name}...`);
+          await seeder.createAIGeneratedCourse(language.id, language);
+          generated++;
+        } catch (error) {
+          console.error(`Failed to generate course for ${language.name}:`, error);
+          errors++;
+        }
+      }
+
+      res.json({ 
+        generated, 
+        skipped, 
+        errors,
+        total: languages.length,
+        message: `Generated courses for ${generated} languages, ${skipped} already had courses${errors > 0 ? `, ${errors} failed` : ''}`
+      });
+    } catch (error) {
+      console.error("Error generating missing courses:", error);
+      res.status(500).json({ message: "Failed to generate missing courses" });
+    }
+  });
+
   app.get('/api/admin/database-summary', isAuthenticated, async (req, res) => {
     try {
       const languages = await storage.getLanguages();

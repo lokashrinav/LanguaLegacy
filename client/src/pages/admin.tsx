@@ -119,7 +119,7 @@ export default function AdminPage() {
   });
 
   // Fetch existing languages
-  const { data: languages = [], isLoading } = useQuery({
+  const { data: languages = [], isLoading } = useQuery<any[]>({
     queryKey: ["/api/languages"],
   });
 
@@ -220,6 +220,31 @@ export default function AdminPage() {
         description: error.message,
         variant: "destructive",
       });
+    },
+  });
+
+  // Generate missing courses mutation
+  const generateMissingCoursesMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", "/api/admin/generate-missing-courses");
+      return await res.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/lessons"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/database-summary"] });
+      toast({
+        title: "AI Courses Generated!",
+        description: `Successfully generated courses for ${data.generated} languages. ${data.skipped} languages already had courses.`,
+        duration: 5000,
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Generation Failed",
+        description: "Failed to generate AI courses. Please try again.",
+        variant: "destructive",
+      });
+      console.error("Error generating courses:", error);
     },
   });
 
@@ -930,7 +955,53 @@ export default function AdminPage() {
           </TabsContent>
 
           <TabsContent value="database">
-            <DatabaseSeeding />
+            <div className="space-y-6">
+              {/* Generate Missing Courses Card */}
+              <Card className="border-2" style={{ borderColor: 'hsl(25 25% 80%)', backgroundColor: 'white' }}>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2" style={{ color: 'hsl(25 20% 25%)' }}>
+                    <Sparkles className="h-5 w-5" />
+                    AI Course Generation
+                  </CardTitle>
+                  <CardDescription>
+                    Automatically generate comprehensive AI-powered courses for all languages that don't have lessons yet.
+                    Each course includes 8 lessons with authentic vocabulary, cultural context, and progressive difficulty.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-muted-foreground">
+                      {dbSummary && languages && (
+                        <p>
+                          {languages.filter((lang: any) => !lang.lessonsCount || lang.lessonsCount === 0).length} languages need courses
+                        </p>
+                      )}
+                    </div>
+                    <Button
+                      onClick={() => generateMissingCoursesMutation.mutate()}
+                      disabled={generateMissingCoursesMutation.isPending}
+                      className="flex items-center gap-2"
+                      data-testid="button-generate-courses"
+                    >
+                      {generateMissingCoursesMutation.isPending ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                          Generating Courses...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="h-4 w-4" />
+                          Generate AI Courses for All Languages
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Database Seeding Section */}
+              <DatabaseSeeding />
+            </div>
           </TabsContent>
         </Tabs>
       </div>
