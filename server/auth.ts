@@ -31,6 +31,7 @@ export function setupAuth(app: Express) {
   });
 
   const isProduction = process.env.NODE_ENV === "production";
+  const productionDomain = process.env.REPLIT_DOMAINS?.split(',')[0];
   
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET || "your-secret-key-here",
@@ -39,11 +40,14 @@ export function setupAuth(app: Express) {
     store: sessionStore,
     cookie: {
       httpOnly: true,
-      sameSite: "lax",
-      secure: isProduction, // Use secure cookies in production since we trust the proxy
+      sameSite: isProduction ? "none" : "lax", // Use 'none' for cross-site requests in production
+      secure: isProduction, // Use secure cookies in production
       maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
+      domain: isProduction && productionDomain ? `.${productionDomain}` : undefined,
+      path: '/',
     },
-    // proxy setting removed - we set it globally with app.set('trust proxy', 1)
+    name: 'connect.sid', // Explicitly set the session cookie name
+    proxy: true, // Trust the proxy
   };
 
   app.use(session(sessionSettings));
@@ -294,6 +298,7 @@ export function setupAuth(app: Express) {
   
   // Test authentication endpoint for production debugging
   app.get("/api/auth/test", (req: AuthRequest, res: Response) => {
+    const headers = req.headers;
     res.json({
       sessionId: req.sessionID,
       hasSession: !!req.session,
@@ -302,6 +307,13 @@ export function setupAuth(app: Express) {
       domain: process.env.REPLIT_DOMAINS,
       replId: process.env.REPL_ID,
       deploymentId: process.env.REPLIT_DEPLOYMENT_ID,
+      origin: headers.origin,
+      referer: headers.referer,
+      host: headers.host,
+      forwardedFor: headers['x-forwarded-for'],
+      forwardedProto: headers['x-forwarded-proto'],
+      cookie: headers.cookie ? 'present' : 'missing',
+      sessionCookie: headers.cookie?.includes('connect.sid') ? 'found' : 'not found',
     });
   });
 }

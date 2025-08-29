@@ -9,9 +9,20 @@ const app = express();
 app.set('trust proxy', 1);
 
 // CORS configuration for authentication
+const corsOrigins = process.env.NODE_ENV === 'production' 
+  ? [
+      'https://langua-legacy.replit.app',
+      'https://langua-78158.firebaseapp.com',
+      'https://langua-78158.web.app',
+      ...(process.env.REPLIT_DOMAINS ? process.env.REPLIT_DOMAINS.split(',').map(d => `https://${d}`) : [])
+    ]
+  : true; // Allow all origins in development
+
 app.use(cors({
   credentials: true,
-  origin: true, // Allow all origins in development
+  origin: corsOrigins,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
 app.use(express.json());
