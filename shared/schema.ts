@@ -50,6 +50,47 @@ export const languages = pgTable("languages", {
   threatLevel: varchar("threat_level").notNull(), // vulnerable, endangered, critically_endangered, extinct
   family: varchar("family"),
   description: text("description"),
+  
+  // Extended linguistic information
+  writingSystems: text("writing_systems").array(), // Latin, Cyrillic, Arabic, etc.
+  phoneticInventory: jsonb("phonetic_inventory"), // IPA consonants, vowels, tones
+  dialects: jsonb("dialects"), // Array of dialect objects with regions
+  grammarFeatures: jsonb("grammar_features"), // Word order, case system, etc.
+  
+  // Geographic and demographic data
+  coordinates: jsonb("coordinates"), // Lat/lng of primary regions
+  historicalRegions: text("historical_regions").array(),
+  speakerAgeGroups: jsonb("speaker_age_groups"), // Demographics by age
+  fluencyLevels: jsonb("fluency_levels"), // Native, fluent, learning, etc.
+  
+  // Cultural and historical context
+  culturalSignificance: text("cultural_significance"),
+  historicalContext: text("historical_context"),
+  ritualUses: text("ritual_uses").array(), // Ceremonial, religious, etc.
+  oralTraditions: text("oral_traditions").array(),
+  
+  // Documentation and preservation status
+  documentationStatus: varchar("documentation_status"), // well_documented, partially_documented, underdocumented
+  lastSpeakerKnown: boolean("last_speaker_known").default(false),
+  revitalizationEfforts: text("revitalization_efforts"),
+  educationalPrograms: text("educational_programs").array(),
+  
+  // Academic and research information
+  linguisticClassification: jsonb("linguistic_classification"), // Detailed family tree
+  researchReferences: text("research_references").array(),
+  academicContacts: jsonb("academic_contacts"), // Researchers, institutions
+  
+  // Digital resources
+  audioArchiveUrl: varchar("audio_archive_url"),
+  videoArchiveUrl: varchar("video_archive_url"),
+  dictionaryUrl: varchar("dictionary_url"),
+  grammarUrl: varchar("grammar_url"),
+  
+  // Community information
+  communityContacts: jsonb("community_contacts"), // Elders, cultural leaders
+  communityWebsite: varchar("community_website"),
+  socialMediaPresence: jsonb("social_media_presence"),
+  
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

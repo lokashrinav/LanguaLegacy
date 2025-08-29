@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useForm } from "react-hook-form";
@@ -13,9 +14,10 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Plus } from "lucide-react";
+import { Trash2, Plus, Globe, BookOpen, Users, Archive, Map, Settings } from "lucide-react";
 
 const languageFormSchema = z.object({
+  // Basic Information
   name: z.string().min(1, "Language name is required"),
   nativeName: z.string().optional(),
   isoCode: z.string().optional(),
@@ -25,6 +27,36 @@ const languageFormSchema = z.object({
   threatLevel: z.enum(["vulnerable", "endangered", "critically_endangered", "extinct"]),
   family: z.string().optional(),
   description: z.string().optional(),
+  
+  // Linguistic Features
+  writingSystems: z.string().optional(), // Will split by commas
+  phoneticFeatures: z.string().optional(),
+  grammarNotes: z.string().optional(),
+  dialects: z.string().optional(),
+  
+  // Geographic & Demographics
+  coordinates: z.string().optional(), // Will parse as lat,lng
+  historicalRegions: z.string().optional(),
+  speakerDemographics: z.string().optional(),
+  
+  // Cultural Context
+  culturalSignificance: z.string().optional(),
+  historicalContext: z.string().optional(),
+  ritualUses: z.string().optional(),
+  oralTraditions: z.string().optional(),
+  
+  // Documentation & Resources
+  documentationStatus: z.enum(["well_documented", "partially_documented", "underdocumented"]).optional(),
+  revitalizationEfforts: z.string().optional(),
+  educationalPrograms: z.string().optional(),
+  audioArchiveUrl: z.string().optional(),
+  videoArchiveUrl: z.string().optional(),
+  dictionaryUrl: z.string().optional(),
+  
+  // Community & Research
+  researchReferences: z.string().optional(),
+  communityWebsite: z.string().optional(),
+  communityContacts: z.string().optional(),
 });
 
 type LanguageFormData = z.infer<typeof languageFormSchema>;
@@ -59,6 +91,26 @@ export default function AdminPage() {
       threatLevel: "endangered",
       family: "",
       description: "",
+      writingSystems: "",
+      phoneticFeatures: "",
+      grammarNotes: "",
+      dialects: "",
+      coordinates: "",
+      historicalRegions: "",
+      speakerDemographics: "",
+      culturalSignificance: "",
+      historicalContext: "",
+      ritualUses: "",
+      oralTraditions: "",
+      documentationStatus: "partially_documented",
+      revitalizationEfforts: "",
+      educationalPrograms: "",
+      audioArchiveUrl: "",
+      videoArchiveUrl: "",
+      dictionaryUrl: "",
+      researchReferences: "",
+      communityWebsite: "",
+      communityContacts: "",
     },
   });
 
@@ -70,7 +122,27 @@ export default function AdminPage() {
   // Create language mutation
   const createLanguageMutation = useMutation({
     mutationFn: async (data: LanguageFormData) => {
-      const res = await apiRequest("POST", "/api/languages", data);
+      // Process form data into proper format for backend
+      const processedData = {
+        ...data,
+        writingSystems: data.writingSystems ? data.writingSystems.split(',').map(s => s.trim()).filter(Boolean) : [],
+        phoneticInventory: data.phoneticFeatures ? { description: data.phoneticFeatures } : null,
+        dialects: data.dialects ? { variants: data.dialects.split(',').map(s => s.trim()).filter(Boolean) } : null,
+        grammarFeatures: data.grammarNotes ? { notes: data.grammarNotes } : null,
+        coordinates: data.coordinates ? (() => {
+          const [lat, lng] = data.coordinates.split(',').map(s => parseFloat(s.trim()));
+          return lat && lng ? { lat, lng } : null;
+        })() : null,
+        historicalRegions: data.historicalRegions ? data.historicalRegions.split(',').map(s => s.trim()).filter(Boolean) : [],
+        speakerAgeGroups: data.speakerDemographics ? { description: data.speakerDemographics } : null,
+        ritualUses: data.ritualUses ? data.ritualUses.split(',').map(s => s.trim()).filter(Boolean) : [],
+        oralTraditions: data.oralTraditions ? data.oralTraditions.split(',').map(s => s.trim()).filter(Boolean) : [],
+        educationalPrograms: data.educationalPrograms ? data.educationalPrograms.split(',').map(s => s.trim()).filter(Boolean) : [],
+        researchReferences: data.researchReferences ? data.researchReferences.split(',').map(s => s.trim()).filter(Boolean) : [],
+        communityContacts: data.communityContacts ? { description: data.communityContacts } : null,
+      };
+      
+      const res = await apiRequest("POST", "/api/languages", processedData);
       return await res.json();
     },
     onSuccess: () => {
@@ -124,6 +196,10 @@ export default function AdminPage() {
         threatLevel: "critically_endangered",
         family: "Ainu",
         description: "Indigenous language of the Ainu people of northern Japan.",
+        writingSystems: "Latin, Katakana",
+        phoneticFeatures: "Rich consonant clusters, vowel harmony",
+        culturalSignificance: "Central to Ainu spiritual practices and oral traditions",
+        documentationStatus: "partially_documented",
       },
       {
         name: "Hawaiian",
@@ -134,6 +210,10 @@ export default function AdminPage() {
         threatLevel: "vulnerable",
         family: "Austronesian",
         description: "Native language of the Hawaiian Islands.",
+        writingSystems: "Latin",
+        phoneticFeatures: "13 letters, rich vowel system",
+        culturalSignificance: "Essential for traditional chants, navigation, and cultural identity",
+        documentationStatus: "well_documented",
       },
       {
         name: "Cherokee",
@@ -144,16 +224,10 @@ export default function AdminPage() {
         threatLevel: "endangered",
         family: "Iroquoian",
         description: "Native American language of the Cherokee people.",
-      },
-      {
-        name: "Cornish",
-        nativeName: "Kernewek",
-        region: "Europe",
-        country: "United Kingdom",
-        speakers: 300,
-        threatLevel: "critically_endangered",
-        family: "Celtic",
-        description: "Celtic language native to Cornwall, England.",
+        writingSystems: "Cherokee syllabary, Latin",
+        phoneticFeatures: "Syllabic writing system, complex verb morphology",
+        culturalSignificance: "Preserves traditional stories, medicine, and governance",
+        documentationStatus: "well_documented",
       },
     ];
 
@@ -174,179 +248,551 @@ export default function AdminPage() {
             Language Administration
           </h1>
           <p className="text-lg" style={{ color: 'hsl(25 15% 45%)' }}>
-            Add new endangered languages to the LanguaLegacy platform
+            Comprehensive language documentation and preservation database
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Add Language Form */}
-          <Card className="border-2" style={{ borderColor: 'hsl(25 25% 80%)', backgroundColor: 'white' }}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2" style={{ color: 'hsl(25 20% 25%)' }}>
-                <Plus className="h-5 w-5" />
-                Add New Language
-              </CardTitle>
-              <CardDescription>
-                {languages.length === 0 && (
-                  <>
-                    No languages found. You can{" "}
+          <div className="lg:col-span-2">
+            <Card className="border-2" style={{ borderColor: 'hsl(25 25% 80%)', backgroundColor: 'white' }}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2" style={{ color: 'hsl(25 20% 25%)' }}>
+                  <Plus className="h-5 w-5" />
+                  Add New Language
+                </CardTitle>
+                <CardDescription>
+                  Each language contains extensive linguistic, cultural, and historical information
+                  {languages.length === 0 && (
+                    <>
+                      . No languages found. You can{" "}
+                      <Button
+                        variant="link"
+                        className="h-auto p-0 text-sm"
+                        onClick={seedSampleLanguages}
+                        disabled={createLanguageMutation.isPending}
+                      >
+                        add sample languages
+                      </Button>
+                      {" "}to get started.
+                    </>
+                  )}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                    <Tabs defaultValue="basic" className="w-full">
+                      <TabsList className="grid w-full grid-cols-6">
+                        <TabsTrigger value="basic" className="flex items-center gap-1">
+                          <Globe className="h-3 w-3" />
+                          Basic
+                        </TabsTrigger>
+                        <TabsTrigger value="linguistic" className="flex items-center gap-1">
+                          <BookOpen className="h-3 w-3" />
+                          Linguistic
+                        </TabsTrigger>
+                        <TabsTrigger value="geographic" className="flex items-center gap-1">
+                          <Map className="h-3 w-3" />
+                          Geographic
+                        </TabsTrigger>
+                        <TabsTrigger value="cultural" className="flex items-center gap-1">
+                          <Users className="h-3 w-3" />
+                          Cultural
+                        </TabsTrigger>
+                        <TabsTrigger value="documentation" className="flex items-center gap-1">
+                          <Archive className="h-3 w-3" />
+                          Docs
+                        </TabsTrigger>
+                        <TabsTrigger value="research" className="flex items-center gap-1">
+                          <Settings className="h-3 w-3" />
+                          Research
+                        </TabsTrigger>
+                      </TabsList>
+
+                      <TabsContent value="basic" className="space-y-4 mt-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="name"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Language Name *</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="e.g. Hawaiian" {...field} data-testid="input-language-name" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="nativeName"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Native Name</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="e.g. ʻŌlelo Hawaiʻi" {...field} data-testid="input-native-name" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="isoCode"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>ISO Code</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="e.g. haw" {...field} data-testid="input-iso-code" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="family"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Language Family</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="e.g. Austronesian" {...field} data-testid="input-family" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="speakers"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Number of Speakers</FormLabel>
+                                <FormControl>
+                                  <Input type="number" placeholder="0" {...field} data-testid="input-speakers" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="threatLevel"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Threat Level *</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <FormControl>
+                                    <SelectTrigger data-testid="select-threat-level">
+                                      <SelectValue placeholder="Select threat level" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="vulnerable">Vulnerable</SelectItem>
+                                    <SelectItem value="endangered">Endangered</SelectItem>
+                                    <SelectItem value="critically_endangered">Critically Endangered</SelectItem>
+                                    <SelectItem value="extinct">Extinct</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <FormField
+                          control={form.control}
+                          name="description"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Description</FormLabel>
+                              <FormControl>
+                                <Textarea 
+                                  placeholder="Brief description of the language and its cultural significance..."
+                                  {...field}
+                                  data-testid="textarea-description"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </TabsContent>
+
+                      <TabsContent value="linguistic" className="space-y-4 mt-6">
+                        <FormField
+                          control={form.control}
+                          name="writingSystems"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Writing Systems</FormLabel>
+                              <FormControl>
+                                <Input placeholder="e.g. Latin, Cyrillic, Cherokee syllabary (comma-separated)" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="phoneticFeatures"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Phonetic Features</FormLabel>
+                              <FormControl>
+                                <Textarea 
+                                  placeholder="Describe key phonetic characteristics, consonants, vowels, tones..."
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="grammarNotes"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Grammar Features</FormLabel>
+                              <FormControl>
+                                <Textarea 
+                                  placeholder="Word order, case system, verb morphology, unique grammatical features..."
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="dialects"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Dialects & Variations</FormLabel>
+                              <FormControl>
+                                <Input placeholder="e.g. Northern dialect, Southern dialect, Island variant (comma-separated)" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </TabsContent>
+
+                      <TabsContent value="geographic" className="space-y-4 mt-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="region"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Region *</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="e.g. Oceania" {...field} data-testid="input-region" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="country"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Country</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="e.g. United States" {...field} data-testid="input-country" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="coordinates"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Primary Coordinates</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="e.g. 19.8968, -155.5828 (latitude, longitude)" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="speakerDemographics"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Speaker Demographics</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="e.g. Mostly elderly speakers, some younger learners" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <FormField
+                          control={form.control}
+                          name="historicalRegions"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Historical Regions</FormLabel>
+                              <FormControl>
+                                <Input placeholder="e.g. Hawaiian Islands, Polynesian Triangle (comma-separated)" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </TabsContent>
+
+                      <TabsContent value="cultural" className="space-y-4 mt-6">
+                        <FormField
+                          control={form.control}
+                          name="culturalSignificance"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Cultural Significance</FormLabel>
+                              <FormControl>
+                                <Textarea 
+                                  placeholder="Describe the role of this language in cultural identity, traditions, and community..."
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="historicalContext"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Historical Context</FormLabel>
+                              <FormControl>
+                                <Textarea 
+                                  placeholder="Historical background, colonization impacts, language policies affecting it..."
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="ritualUses"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Ritual & Ceremonial Uses</FormLabel>
+                              <FormControl>
+                                <Input placeholder="e.g. Religious ceremonies, Traditional songs, Healing practices (comma-separated)" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="oralTraditions"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Oral Traditions</FormLabel>
+                              <FormControl>
+                                <Input placeholder="e.g. Creation myths, Historical narratives, Folk tales (comma-separated)" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </TabsContent>
+
+                      <TabsContent value="documentation" className="space-y-4 mt-6">
+                        <FormField
+                          control={form.control}
+                          name="documentationStatus"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Documentation Status</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select documentation level" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="well_documented">Well Documented</SelectItem>
+                                  <SelectItem value="partially_documented">Partially Documented</SelectItem>
+                                  <SelectItem value="underdocumented">Underdocumented</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="revitalizationEfforts"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Revitalization Efforts</FormLabel>
+                              <FormControl>
+                                <Textarea 
+                                  placeholder="Current efforts to preserve and revitalize the language..."
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="educationalPrograms"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Educational Programs</FormLabel>
+                              <FormControl>
+                                <Input placeholder="e.g. Immersion schools, University courses, Community classes (comma-separated)" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="audioArchiveUrl"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Audio Archive URL</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="https://..." {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="videoArchiveUrl"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Video Archive URL</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="https://..." {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="dictionaryUrl"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Dictionary URL</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="https://..." {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </TabsContent>
+
+                      <TabsContent value="research" className="space-y-4 mt-6">
+                        <FormField
+                          control={form.control}
+                          name="researchReferences"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Research References</FormLabel>
+                              <FormControl>
+                                <Textarea 
+                                  placeholder="Academic papers, books, studies about this language (one per line or comma-separated)"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="communityContacts"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Community Contacts</FormLabel>
+                              <FormControl>
+                                <Textarea 
+                                  placeholder="Elders, cultural leaders, community organizations working with this language..."
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="communityWebsite"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Community Website</FormLabel>
+                              <FormControl>
+                                <Input placeholder="https://..." {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </TabsContent>
+                    </Tabs>
+
                     <Button
-                      variant="link"
-                      className="h-auto p-0 text-sm"
-                      onClick={seedSampleLanguages}
+                      type="submit"
                       disabled={createLanguageMutation.isPending}
+                      className="w-full"
+                      style={{ backgroundColor: 'hsl(25 25% 50%)', color: 'white' }}
+                      data-testid="button-submit-language"
                     >
-                      add sample languages
+                      {createLanguageMutation.isPending ? "Adding Language..." : "Add Language to Database"}
                     </Button>
-                    {" "}to get started.
-                  </>
-                )}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Language Name *</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g. Hawaiian" {...field} data-testid="input-language-name" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="nativeName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Native Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g. ʻŌlelo Hawaiʻi" {...field} data-testid="input-native-name" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="region"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Region *</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g. Oceania" {...field} data-testid="input-region" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="country"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Country</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g. United States" {...field} data-testid="input-country" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="speakers"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Number of Speakers</FormLabel>
-                          <FormControl>
-                            <Input type="number" placeholder="0" {...field} data-testid="input-speakers" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="threatLevel"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Threat Level *</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger data-testid="select-threat-level">
-                                <SelectValue placeholder="Select threat level" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="vulnerable">Vulnerable</SelectItem>
-                              <SelectItem value="endangered">Endangered</SelectItem>
-                              <SelectItem value="critically_endangered">Critically Endangered</SelectItem>
-                              <SelectItem value="extinct">Extinct</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="family"
-                      render={({ field }) => (
-                        <FormItem className="md:col-span-2">
-                          <FormLabel>Language Family</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g. Austronesian" {...field} data-testid="input-family" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="description"
-                      render={({ field }) => (
-                        <FormItem className="md:col-span-2">
-                          <FormLabel>Description</FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              placeholder="Brief description of the language and its cultural significance..."
-                              {...field}
-                              data-testid="textarea-description"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <Button
-                    type="submit"
-                    disabled={createLanguageMutation.isPending}
-                    className="w-full"
-                    style={{ backgroundColor: 'hsl(25 25% 50%)', color: 'white' }}
-                    data-testid="button-submit-language"
-                  >
-                    {createLanguageMutation.isPending ? "Adding..." : "Add Language"}
-                  </Button>
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+          </div>
 
           {/* Current Languages */}
           <Card className="border-2" style={{ borderColor: 'hsl(25 25% 80%)', backgroundColor: 'white' }}>
@@ -355,7 +801,7 @@ export default function AdminPage() {
                 Current Languages ({languages.length})
               </CardTitle>
               <CardDescription>
-                Languages currently available on the platform
+                Languages in the database
               </CardDescription>
             </CardHeader>
             <CardContent>
