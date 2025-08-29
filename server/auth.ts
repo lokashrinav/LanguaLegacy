@@ -162,20 +162,17 @@ export function setupAuth(app: Express) {
       // Verify the Firebase ID token
       const admin = await import("firebase-admin");
       if (!admin.apps.length) {
-        const serviceAccountJson = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+        const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT;
         if (!serviceAccountJson) {
-          throw new Error("GOOGLE_APPLICATION_CREDENTIALS not found");
+          throw new Error("FIREBASE_SERVICE_ACCOUNT not found");
         }
         
         let serviceAccount;
         try {
           serviceAccount = JSON.parse(serviceAccountJson);
         } catch (parseError) {
-          throw new Error("Invalid JSON in GOOGLE_APPLICATION_CREDENTIALS");
+          throw new Error("Invalid JSON in FIREBASE_SERVICE_ACCOUNT");
         }
-        
-        // Explicitly clear the environment variable to prevent auto-detection
-        delete process.env.GOOGLE_APPLICATION_CREDENTIALS;
         
         admin.initializeApp({
           credential: admin.credential.cert(serviceAccount),
