@@ -155,37 +155,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/admin/generate-missing-courses', isAuthenticated, isAdmin, async (req, res) => {
     try {
       const { LanguageDataSeeder } = await import('./dataSeeder');
+      const { limit = 5 } = req.body; // Default to generating for 5 languages at a time
+      
       const languages = await storage.getLanguages();
       const seeder = new LanguageDataSeeder();
       let generated = 0;
       let skipped = 0;
       let errors = 0;
+      let processed = 0;
+      const languagesNeedingCourses = [];
 
+      // First, identify languages that need courses
       for (const language of languages) {
-        try {
-          // Check if language already has lessons
-          const existingLessons = await storage.getLessons(language.id);
-          if (existingLessons && existingLessons.length > 0) {
-            skipped++;
-            continue;
-          }
+        const existingLessons = await storage.getLessons(language.id);
+        if (!existingLessons || existingLessons.length === 0) {
+          languagesNeedingCourses.push(language);
+        } else {
+          skipped++;
+        }
+      }
 
+      // Process only up to the limit
+      const toProcess = languagesNeedingCourses.slice(0, limit);
+      
+      for (const language of toProcess) {
+        try {
           // Generate AI course for this language
-          console.log(`Generating AI course for ${language.name}...`);
+          console.log(`[${processed + 1}/${toProcess.length}] Generating AI course for ${language.name}...`);
           await seeder.createAIGeneratedCourse(language.id, language);
           generated++;
+          processed++;
         } catch (error) {
           console.error(`Failed to generate course for ${language.name}:`, error);
           errors++;
+          processed++;
         }
       }
+
+      const remaining = languagesNeedingCourses.length - toProcess.length;
 
       res.json({ 
         generated, 
         skipped, 
         errors,
+        processed,
+        remaining,
         total: languages.length,
-        message: `Generated courses for ${generated} languages, ${skipped} already had courses${errors > 0 ? `, ${errors} failed` : ''}`
+        message: `Generated courses for ${generated} languages${remaining > 0 ? `, ${remaining} languages still need courses` : ', all languages now have courses!'}`,
+        needsCourses: remaining
       });
     } catch (error) {
       console.error("Error generating missing courses:", error);
