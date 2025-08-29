@@ -24,18 +24,39 @@ export interface AuthRequest extends Request {
 export function setupAuth(app: Express) {
   const PostgresSessionStore = connectPg(session);
   
+  // Log database connection for debugging
+  console.log("[Auth Setup] Initializing session store");
+  console.log("[Auth Setup] DATABASE_URL exists:", !!process.env.DATABASE_URL);
+  console.log("[Auth Setup] Environment:", process.env.NODE_ENV);
+  
   const sessionStore = new PostgresSessionStore({
     conString: process.env.DATABASE_URL,
     createTableIfMissing: true,
     tableName: "sessions",
+    errorLog: (error) => {
+      console.error("[Session Store Error]:", error);
+    },
+  });
+  
+  // Test database connection
+  sessionStore.pruneSessions((err) => {
+    if (err) {
+      console.error("[Session Store] Failed to connect to database:", err);
+    } else {
+      console.log("[Session Store] Successfully connected to database");
+    }
   });
 
   const isProduction = process.env.NODE_ENV === "production";
   
+  // Ensure we have a consistent session secret
+  const sessionSecret = process.env.SESSION_SECRET || "langua-legacy-session-secret-2025";
+  console.log("[Auth Setup] Session secret configured:", sessionSecret.substring(0, 5) + "...");
+  
   const sessionSettings: session.SessionOptions = {
-    secret: process.env.SESSION_SECRET || "your-secret-key-here",
-    resave: true, // Changed to true to force session saves
-    saveUninitialized: true, // Changed to true to ensure sessions are created
+    secret: sessionSecret,
+    resave: true, // Force session saves
+    saveUninitialized: true, // Ensure sessions are created
     store: sessionStore,
     cookie: {
       httpOnly: true,
@@ -385,7 +406,9 @@ export function setupAuth(app: Express) {
       isProduction: process.env.NODE_ENV === "production",
       domain: process.env.REPLIT_DOMAINS,
       replId: process.env.REPL_ID,
-      deploymentId: process.env.REPLIT_DEPLOYMENT_ID,
+      deploymentId: process.env.REPLIT_DEPLOYMENT_ID || "not-set",
+      actualDeploymentId: process.env.DEPLOYMENT_ID || process.env.REPLIT_DEPLOYMENT_ID || "none",
+      databaseUrl: process.env.DATABASE_URL ? "present" : "missing",
       origin: headers.origin,
       referer: headers.referer,
       host: headers.host,
