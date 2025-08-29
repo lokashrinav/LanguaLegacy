@@ -179,7 +179,15 @@ Return ONLY a valid JSON array of objects, no additional text.`;
         throw new Error('Unexpected response type from AI');
       }
 
-      const languagesData = JSON.parse(content.text) as InsertLanguage[];
+      // Clean the response text - remove markdown code blocks if present
+      let cleanText = content.text.trim();
+      if (cleanText.startsWith('```json')) {
+        cleanText = cleanText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+      } else if (cleanText.startsWith('```')) {
+        cleanText = cleanText.replace(/^```\s*/, '').replace(/\s*```$/, '');
+      }
+
+      const languagesData = JSON.parse(cleanText) as InsertLanguage[];
       
       // Validate the data structure
       if (!Array.isArray(languagesData)) {
