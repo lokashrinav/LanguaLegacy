@@ -15,6 +15,7 @@ import AdminPage from "@/pages/admin.tsx";
 import AIInterviewPage from "@/pages/ai-interview.tsx";
 import StudyGroups from "@/pages/study-groups.tsx";
 import StudyGroupWorkspace from "@/pages/study-group-workspace.tsx";
+import Workspaces from "@/pages/workspaces.tsx";
 import AuthPage from "@/pages/auth.tsx";
 import NotFound from "@/pages/not-found.tsx";
 
@@ -41,6 +42,7 @@ function Router() {
           <Route path="/ai-interview" component={AIInterviewPage} />
           <Route path="/study-groups" component={StudyGroups} />
           <Route path="/study-group/:id" component={StudyGroupWorkspace} />
+          <Route path="/workspaces" component={Workspaces} />
         </>
       )}
       <Route component={NotFound} />

@@ -804,6 +804,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all languages with their workspace data
+  app.get('/api/languages/with-workspaces', async (req, res) => {
+    try {
+      const languages = await storage.getLanguages();
+      
+      // Fetch taskade projects for all languages
+      const languagesWithWorkspaces = await Promise.all(
+        languages.map(async (language) => {
+          const taskadeProject = await storage.getTaskadeProject(language.id);
+          return {
+            ...language,
+            taskadeProject: taskadeProject || null
+          };
+        })
+      );
+      
+      res.json(languagesWithWorkspaces);
+    } catch (error) {
+      console.error("Error fetching languages with workspaces:", error);
+      res.status(500).json({ message: "Failed to fetch languages with workspaces" });
+    }
+  });
+
   // Taskade Project routes
   app.get('/api/languages/:languageId/taskade-project', async (req, res) => {
     try {
