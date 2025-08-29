@@ -192,7 +192,7 @@ export function setupAuth(app: Express) {
     });
   });
 
-  // Google login endpoint - Simplified for production
+  // Google login endpoint
   app.post("/api/auth/google", async (req: AuthRequest, res: Response) => {
     try {
       const { idToken } = req.body;
@@ -200,34 +200,7 @@ export function setupAuth(app: Express) {
         return res.status(400).json({ error: "ID token is required" });
       }
 
-      // For production demo: Create a demo user instead of using Firebase
-      // This avoids Firebase configuration issues in production
-      if (process.env.NODE_ENV === "production" || !process.env.FIREBASE_SERVICE_ACCOUNT) {
-        // Extract email from the token (in production, you'd validate this properly)
-        const email = idToken.split('@')[0] + "@demo.com";
-        const userId = "google-demo-" + Buffer.from(email).toString('base64').slice(0, 10);
-        
-        const user = await storage.upsertUser({
-          id: userId,
-          email: email,
-          firstName: "Demo",
-          lastName: "User",
-          authProvider: "google-demo",
-        });
-
-        // Set session
-        req.session.userId = user.id;
-        req.user = {
-          id: user.id,
-          email: user.email!,
-          firstName: user.firstName || undefined,
-          lastName: user.lastName || undefined,
-        };
-
-        return res.json(req.user);
-      }
-
-      // Original Firebase auth for development
+      // Verify the Firebase ID token
       const admin = await import("firebase-admin");
       if (!admin.apps.length) {
         const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT;
@@ -294,21 +267,6 @@ export function setupAuth(app: Express) {
   // Get current user endpoint
   app.get("/api/auth/user", async (req: AuthRequest, res: Response) => {
     try {
-      // For production demo: Auto-create a demo user if no session exists
-      if (!req.session.userId && (process.env.NODE_ENV === "production" || process.env.NODE_ENV === "development")) {
-        const timestamp = Date.now();
-        const testUser = await storage.upsertUser({
-          id: "demo-user-" + timestamp,
-          email: `demo${timestamp}@example.com`,
-          username: "demo_user_" + timestamp,
-          firstName: "Demo",
-          lastName: "User",
-          authProvider: "demo",
-        });
-        req.session.userId = testUser.id;
-        await new Promise(resolve => req.session.save(resolve)); // Ensure session is saved
-      }
-      
       if (!req.session.userId) {
         return res.status(401).json({ message: "Unauthorized" });
       }
