@@ -96,7 +96,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // AI Interview routes
-  app.post('/api/ai/interview', isAuthenticated, async (req, res) => {
+  app.post('/api/ai/interview', isAuthenticated, async (req: any, res) => {
     try {
       const { conductLanguageInterview } = await import('./anthropic');
       
@@ -104,6 +104,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
         req.body.message,
         req.body.context
       );
+      
+      // Auto-save interview data to database for hackathon demo
+      if (req.body.context?.languageContext?.id && req.body.message) {
+        try {
+          const userId = req.user.id;
+          const languageId = req.body.context.languageContext.id;
+          
+          // Parse the user's message to extract linguistic information
+          const userMessage = req.body.message.toLowerCase();
+          
+          // Create different types of contributions based on content
+          if (userMessage.includes('case') || userMessage.includes('nominative') || userMessage.includes('genitive')) {
+            // Grammar contribution
+            await storage.createContribution({
+              userId,
+              languageId,
+              type: 'grammar',
+              originalText: req.body.message,
+              grammarPattern: extractGrammarPattern(req.body.message),
+              grammarExplanation: req.body.message,
+              approved: true, // Auto-approve for hackathon
+              category: 'educational',
+              difficultyLevel: 'intermediate'
+            });
+          } else if (userMessage.includes('writing') || userMessage.includes('orthograph') || userMessage.includes('alphabet')) {
+            // Writing system contribution
+            await storage.createContribution({
+              userId,
+              languageId,
+              type: 'text',
+              originalText: extractExamples(req.body.message),
+              translation: 'Writing system documentation',
+              usageContext: req.body.message,
+              approved: true,
+              category: 'educational',
+              difficultyLevel: 'beginner'
+            });
+          } else if (userMessage.includes('consonant') || userMessage.includes('vowel') || userMessage.includes('phonetic')) {
+            // Phonetic contribution
+            await storage.createContribution({
+              userId,
+              languageId,
+              type: 'audio',
+              originalText: extractExamples(req.body.message),
+              phoneticTranscription: extractPhonetics(req.body.message),
+              translation: 'Phonetic documentation',
+              approved: true,
+              category: 'educational',
+              difficultyLevel: 'intermediate'
+            });
+          } else if (userMessage.includes('culture') || userMessage.includes('tradition') || userMessage.includes('dialect')) {
+            // Cultural contribution
+            await storage.createContribution({
+              userId,
+              languageId,
+              type: 'cultural_context',
+              originalText: req.body.message,
+              culturalSignificance: req.body.message,
+              approved: true,
+              category: 'ceremonial',
+              difficultyLevel: 'intermediate'
+            });
+          }
+          
+          console.log(`Auto-saved interview contribution for language ${languageId}`);
+        } catch (saveError) {
+          console.error('Error auto-saving interview data:', saveError);
+          // Don't fail the request if saving fails
+        }
+      }
       
       res.json(result);
     } catch (error) {
@@ -114,6 +184,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+  
+  // Helper functions for extracting linguistic data
+  function extractGrammarPattern(text: string): string {
+    // Extract grammatical patterns mentioned in the text
+    const patterns = text.match(/\b(SOV|SVO|VSO|VOS|OSV|OVS|agglutinative|fusional|isolating|nominative|accusative|ergative|genitive|ablative|allative)\b/gi);
+    return patterns ? patterns.join(', ') : 'morphological pattern';
+  }
+  
+  function extractExamples(text: string): string {
+    // Extract text between quotes or after "example:" or similar patterns
+    const quoted = text.match(/"([^"]+)"|'([^']+)'|«([^»]+)»/g);
+    if (quoted) return quoted.join(', ').replace(/["'«»]/g, '');
+    
+    const afterExample = text.match(/(?:example|e\.g\.|for instance|such as)[:\s]+([^.,;]+)/gi);
+    if (afterExample) return afterExample[0];
+    
+    return '';
+  }
+  
+  function extractPhonetics(text: string): string {
+    // Extract IPA symbols or phonetic descriptions
+    const ipaSymbols = text.match(/\[([^\]]+)\]|\b[ptkcfθsʃhbdgvðzʒmnŋlrjwaeiouæʌɪʊəɑɔ]+\b/g);
+    return ipaSymbols ? ipaSymbols.join(' ') : '';
+  }
 
   app.post('/api/ai/detect-language', isAuthenticated, async (req, res) => {
     try {
