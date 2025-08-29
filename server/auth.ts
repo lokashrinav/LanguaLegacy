@@ -321,58 +321,27 @@ export function setupAuth(app: Express) {
         profileImageUrl: user.profileImageUrl || undefined,
       };
 
-      // In production, regenerate can fail if session store isn't ready
-      // Try to set userId directly first, then regenerate if needed
-      const isProduction = process.env.NODE_ENV === "production";
+      // Simple approach - just set userId and save
+      req.session.userId = user.id;
+      console.log("[Auth Debug] Setting userId:", user.id, "for user:", user.email);
       
-      if (isProduction) {
-        // For production, set userId and save directly
-        req.session.userId = user.id;
-        console.log("[Auth Debug] Production mode - setting userId directly:", user.id);
-        
-        req.session.save((saveErr) => {
-          if (saveErr) {
-            console.error("[Auth Debug] Session save error:", saveErr);
-            // Try regenerating as fallback
-            req.session.regenerate((regenErr) => {
-              if (regenErr) {
-                console.error("[Auth Debug] Session regenerate also failed:", regenErr);
-                return res.status(500).json({ error: "Failed to save session", details: saveErr.message });
-              }
-              req.session.userId = user.id;
-              req.session.save((saveErr2) => {
-                if (saveErr2) {
-                  return res.status(500).json({ error: "Failed to save session after regenerate", details: saveErr2.message });
-                }
-                res.json(req.user);
-              });
-            });
-          } else {
-            console.log("[Auth Debug] Session saved successfully");
-            res.json(req.user);
-          }
-        });
-      } else {
-        // For development, use regenerate for security
-        req.session.regenerate((regenErr) => {
-          if (regenErr) {
-            console.error("[Auth Debug] Session regenerate error:", regenErr);
-            return res.status(500).json({ error: "Failed to regenerate session" });
-          }
-          
-          req.session.userId = user.id;
-          console.log("[Auth Debug] Development mode - regenerated session with userId:", user.id);
-          
-          req.session.save((saveErr) => {
-            if (saveErr) {
-              console.error("[Auth Debug] Session save error:", saveErr);
-              return res.status(500).json({ error: "Failed to save session", details: saveErr.message });
-            }
-            console.log("[Auth Debug] Session saved successfully");
-            res.json(req.user);
+      req.session.save((saveErr) => {
+        if (saveErr) {
+          console.error("[Auth Debug] Session save error:", saveErr);
+          return res.status(500).json({ 
+            error: "Failed to save session", 
+            details: saveErr.message,
+            sessionId: req.sessionID
           });
+        }
+        console.log("[Auth Debug] Session saved successfully");
+        console.log("[Auth Debug] Session data:", { 
+          sessionId: req.sessionID,
+          userId: req.session.userId,
+          hasStore: !!req.session.save
         });
-      }
+        res.json(req.user);
+      });
     } catch (error) {
       console.error("[Google Auth] Full error details:", error);
       console.error("[Google Auth] Error stack:", error instanceof Error ? error.stack : "No stack trace");
