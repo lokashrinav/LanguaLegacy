@@ -395,9 +395,9 @@ export default function StudyGroups() {
           </button>
         </div>
 
-        {/* Tab panels with visibility toggle */}
+        {/* Tab panels with smooth transitions */}
         <div className="relative">
-          <div className={`space-y-4 ${activeTab === "discover" ? "" : "hidden"}`}>
+          <div className={`space-y-4 transition-all duration-200 ${activeTab === "discover" ? "opacity-100 relative" : "opacity-0 absolute inset-0 pointer-events-none"}`}>
             <div className="flex gap-4 mb-6">
               <Input
                 placeholder="Search study groups..."
@@ -431,7 +431,7 @@ export default function StudyGroups() {
             )}
           </div>
 
-          <div className={`space-y-4 ${activeTab === "my-groups" ? "" : "hidden"}`}>
+          <div className={`space-y-4 transition-all duration-200 ${activeTab === "my-groups" ? "opacity-100 relative" : "opacity-0 absolute inset-0 pointer-events-none"}`}>
             {!user ? (
               <Card className="py-12 text-center">
                 <CardContent>
