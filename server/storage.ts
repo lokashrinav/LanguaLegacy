@@ -357,9 +357,14 @@ export class DatabaseStorage implements IStorage {
       const daysSinceLastActivity = Math.floor((now.getTime() - lastActivity.getTime()) / (1000 * 60 * 60 * 24));
 
       let newStreak = progress.streakDays || 0;
-      if (daysSinceLastActivity === 1) {
+      if (daysSinceLastActivity === 0) {
+        // Same day - keep the streak (at least 1)
+        newStreak = Math.max(1, newStreak);
+      } else if (daysSinceLastActivity === 1) {
+        // Next day - increment streak
         newStreak += 1;
       } else if (daysSinceLastActivity > 1) {
+        // Streak broken - reset to 1
         newStreak = 1;
       }
 

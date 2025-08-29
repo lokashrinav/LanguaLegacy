@@ -59,6 +59,11 @@ export default function Dashboard() {
     enabled: isAuthenticated,
   });
 
+  const { data: languages } = useQuery<any[]>({
+    queryKey: ["/api/languages"],
+    enabled: isAuthenticated,
+  });
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -294,10 +299,12 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {learningProgress.map((progress: any) => (
+                  {learningProgress.map((progress: any) => {
+                    const language = languages?.find((l: any) => l.id === progress.languageId);
+                    return (
                     <div key={progress.id} className="p-4 bg-background rounded-lg border border-border" data-testid={`progress-${progress.languageId}`}>
                       <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-medium text-foreground">Language Progress</h4>
+                        <h4 className="font-medium text-foreground">{language?.name || 'Unknown Language'}</h4>
                         <Badge variant="secondary">{progress.currentLevel}</Badge>
                       </div>
                       <div className="mb-3">
@@ -321,7 +328,8 @@ export default function Dashboard() {
                         </Link>
                       </div>
                     </div>
-                  ))}
+                  );
+                  })}
                 </div>
               </CardContent>
             </Card>
