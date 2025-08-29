@@ -43,9 +43,8 @@ const TabsContent = React.forwardRef<
     ref={ref}
     className={cn(
       "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-      "data-[state=inactive]:absolute data-[state=inactive]:invisible data-[state=inactive]:opacity-0",
-      "data-[state=active]:relative data-[state=active]:visible data-[state=active]:opacity-100",
-      "transition-opacity duration-150",
+      "data-[state=inactive]:hidden",
+      "data-[state=active]:block",
       className
     )}
     forceMount

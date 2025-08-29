@@ -1,0 +1,26 @@
+It looks as if the whole **page surface is briefly shrinking a few percent while it fades out**, so you see empty (black) bands above and below until the next tab fades in.
+That usually happens when the *scale* animation is being applied to the top-level route element while that element is still laid out normally in the document flow.
+
+### Why it happens
+
+1. **Scale on a flow item.**
+   A `transform: scale(.97)` (or similar) is applied to the route container during `initial` or `exit`.
+   Because the element remains `position: relative` in the flex/grid column, the browser reserves its original height but then shrinks the pixels inside it, exposing whatever background colour is behind the page (your recorder shows it as black).
+
+2. **No absolute stacking context.**
+   When the outgoing page is not taken out of the flow (`position: absolute|fixed`) the rest of the layout cannot “cover” the gaps while it animates.
+
+### Two quick ways to fix it
+
+| Fix                                        | When to use                            | Snippet                                                                                                                                                                                                                                                                                                                                             |
+| ------------------------------------------ | -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Remove scale, keep opacity-only fade**   | If you do not care about a zoom effect | `js const variants={initial:{opacity:0},animate:{opacity:1,transition:{duration:.25}},exit:{opacity:0,transition:{duration:.2}}};`                                                                                                                                                                                                                  |
+| **Keep scale but pin the page absolutely** | If you still want the tiny zoom        | `jsx const variants={initial:{opacity:0,scale:.97,transformOrigin:'top center'},animate:{opacity:1,scale:1},exit:{opacity:0,scale:.97}};<AnimatePresence mode="wait"><motion.main key={route} variants={variants} style={{position:'absolute',inset:0}} initial="initial" animate="animate" exit="exit">{children}</motion.main></AnimatePresence>` |
+
+### Extra tips
+
+* **Match the body background** (`body{background:#e7e0d0}`) so any tiny gap is the same beige, not black.
+* Add `pointerEvents:"none"` on the exiting panel if clicks slip through while it fades.
+* Keep the duration short (≈ 0.25 s) so the switch feels crisp.
+
+Apply either fix and record again—you should no longer see the top-and-bottom bars or any vertical “jump”. If a different artefact remains, share the specific variant code block and I can pinpoint the exact line.
