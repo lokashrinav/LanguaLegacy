@@ -54,6 +54,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import type { StudyGroup, Language } from "@shared/schema";
+import Navigation from "@/components/Navigation";
 
 const createGroupSchema = z.object({
   name: z.string().min(3, "Group name must be at least 3 characters"),
@@ -212,7 +213,9 @@ export default function StudyGroups() {
   };
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-6xl">
+    <div className="min-h-screen bg-background">
+      <Navigation />
+      <div className="container mx-auto py-8 px-4 max-w-6xl">
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-4xl font-bold">Study Groups</h1>
@@ -441,6 +444,7 @@ export default function StudyGroups() {
           )}
         </TabsContent>
       </Tabs>
+      </div>
     </div>
   );
 }
