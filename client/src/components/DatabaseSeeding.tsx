@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Database, Sparkles, Globe, Loader2, BarChart3 } from "lucide-react";
@@ -171,20 +172,47 @@ export default function DatabaseSeeding() {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Seeding Controls */}
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="count">Number of Languages to Generate</Label>
-                <Input
-                  id="count"
-                  type="number"
-                  min="1"
-                  max="100"
-                  value={seedingCount}
-                  onChange={(e) => setSeedingCount(parseInt(e.target.value) || 50)}
-                  data-testid="input-seeding-count"
-                />
-                <p className="text-sm text-gray-600 mt-1">
-                  Generates {seedingCount} languages with comprehensive data
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <Label className="text-base font-medium">Number of Languages to Generate</Label>
+                
+                {/* Quick Presets */}
+                <div className="grid grid-cols-4 gap-2">
+                  {[10, 25, 50, 100].map((preset) => (
+                    <Button
+                      key={preset}
+                      variant={seedingCount === preset ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setSeedingCount(preset)}
+                      data-testid={`button-preset-${preset}`}
+                    >
+                      {preset}
+                    </Button>
+                  ))}
+                </div>
+
+                {/* Slider */}
+                <div className="space-y-3">
+                  <Slider
+                    value={[seedingCount]}
+                    onValueChange={(value) => setSeedingCount(value[0])}
+                    max={100}
+                    min={1}
+                    step={1}
+                    className="w-full"
+                    data-testid="slider-seeding-count"
+                  />
+                  <div className="flex justify-between text-sm text-gray-500">
+                    <span>1</span>
+                    <span className="font-medium text-lg text-gray-900">
+                      {seedingCount} languages
+                    </span>
+                    <span>100</span>
+                  </div>
+                </div>
+
+                <p className="text-sm text-gray-600">
+                  Each language includes complete dictionaries, grammar rules, and thousands of example sentences
                 </p>
               </div>
 
