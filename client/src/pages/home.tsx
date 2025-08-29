@@ -43,7 +43,7 @@ export default function Home() {
 
           {/* Quick Stats */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <Card data-testid="stat-contributions">
+            <Card className="bg-white" data-testid="stat-contributions">
               <CardContent className="pt-6">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-primary">
@@ -54,7 +54,7 @@ export default function Home() {
               </CardContent>
             </Card>
             
-            <Card data-testid="stat-lessons">
+            <Card className="bg-white" data-testid="stat-lessons">
               <CardContent className="pt-6">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-accent">
@@ -65,7 +65,7 @@ export default function Home() {
               </CardContent>
             </Card>
             
-            <Card data-testid="stat-streak">
+            <Card className="bg-white" data-testid="stat-streak">
               <CardContent className="pt-6">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-primary">
@@ -76,7 +76,7 @@ export default function Home() {
               </CardContent>
             </Card>
             
-            <Card data-testid="stat-languages">
+            <Card className="bg-white" data-testid="stat-languages">
               <CardContent className="pt-6">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-accent">
@@ -91,7 +91,7 @@ export default function Home() {
           {/* Quick Actions */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <Link href="/learn" className="w-full">
-              <Card className="border-2 hover:shadow-lg transition-all cursor-pointer group" 
+              <Card className="border-2 hover:shadow-lg transition-all cursor-pointer group bg-white" 
                     style={{borderColor: 'hsl(25 25% 80%)'}}>
                 <CardHeader>
                   <div className="flex items-center space-x-3">
@@ -112,7 +112,7 @@ export default function Home() {
               </Card>
             </Link>
 
-            <Card className="hover:shadow-lg transition-shadow" data-testid="card-contribute">
+            <Card className="hover:shadow-lg transition-shadow bg-white" data-testid="card-contribute">
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <i className="fas fa-microphone text-accent mr-2"></i>
@@ -131,7 +131,7 @@ export default function Home() {
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-lg transition-shadow" data-testid="card-discover">
+            <Card className="hover:shadow-lg transition-shadow bg-white" data-testid="card-discover">
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <i className="fas fa-search text-primary mr-2"></i>
@@ -181,7 +181,7 @@ export default function Home() {
               ))
             ) : (
               recentLanguages?.slice(0, 3).map((language: any) => (
-                <Card key={language.id} className="hover:shadow-lg transition-shadow" data-testid={`language-${language.id}`}>
+                <Card key={language.id} className="hover:shadow-lg transition-shadow bg-white" data-testid={`language-${language.id}`}>
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between mb-4">
                       <div>
