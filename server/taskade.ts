@@ -91,25 +91,33 @@ class TaskadeClient {
   }
 
   async createTasks(projectId: string, tasks: Array<{ content: string; completed?: boolean }>): Promise<TaskadeTask[]> {
-    const response = await fetch(`${TASKADE_API_BASE}/projects/${projectId}/tasks`, {
-      method: 'POST',
-      headers: this.headers,
-      body: JSON.stringify({
-        tasks: tasks.map(task => ({
-          contentType: 'text/markdown',
-          content: task.content,
-          completed: task.completed || false
-        }))
-      })
-    });
+    const createdTasks: TaskadeTask[] = [];
+    
+    // Create tasks one by one as Taskade API might not support batch creation
+    for (const task of tasks) {
+      try {
+        const response = await fetch(`${TASKADE_API_BASE}/projects/${projectId}/tasks`, {
+          method: 'POST',
+          headers: this.headers,
+          body: JSON.stringify({
+            contentType: 'text/markdown',
+            content: task.content,
+            completed: task.completed || false
+          })
+        });
 
-    if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`Failed to create tasks: ${error}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.item) {
+            createdTasks.push(data.item);
+          }
+        }
+      } catch (error) {
+        console.error(`Failed to create task "${task.content}":`, error);
+      }
     }
-
-    const data = await response.json();
-    return data.items || [];
+    
+    return createdTasks;
   }
 
   async updateTask(projectId: string, taskId: string, updates: { content?: string; completed?: boolean }): Promise<TaskadeTask> {
@@ -167,16 +175,17 @@ export async function createLanguagePreservationProject(
     throw new Error('Taskade integration is not configured');
   }
 
-  // Get the first workspace or create a default one
-  const workspaces = await taskadeClient.getWorkspaces();
-  if (workspaces.length === 0) {
-    throw new Error('No Taskade workspace found. Please create a workspace in Taskade first.');
-  }
+  try {
+    // Get the first workspace or create a default one
+    const workspaces = await taskadeClient.getWorkspaces();
+    if (workspaces.length === 0) {
+      throw new Error('No Taskade workspace found. Please create a workspace in Taskade first.');
+    }
 
-  const workspace = workspaces[0];
+    const workspace = workspaces[0];
 
-  // Create project content with preservation tasks
-  const projectContent = `# ${languageName} Preservation Project
+    // Create project content with preservation tasks
+    const projectContent = `# ${languageName} Preservation Project
 
 ## Language Information
 - **Region**: ${region}
@@ -198,36 +207,45 @@ Help preserve ${languageName} by contributing:
 4. Upload recordings and translations
 5. Review and verify contributions`;
 
-  // Create the project
-  const project = await taskadeClient.createProject(
-    workspace.id,
-    `${languageName} Language Preservation`,
-    projectContent
-  );
+    // Create the project
+    const project = await taskadeClient.createProject(
+      workspace.id,
+      `${languageName} Language Preservation`,
+      projectContent
+    );
 
-  // Create initial tasks
-  const initialTasks = [
-    { content: '📝 Document basic greetings and common phrases' },
-    { content: '🎙️ Record pronunciation guides for the alphabet/syllables' },
-    { content: '📚 Collect traditional stories or folklore' },
-    { content: '🗣️ Interview native speakers about language history' },
-    { content: '📖 Create vocabulary list for everyday objects' },
-    { content: '🎵 Document traditional songs or poems' },
-    { content: '👥 Find and connect with language community members' },
-    { content: '📸 Document written forms if they exist' },
-    { content: '🌍 Map dialect variations by region' },
-    { content: '✅ Review and verify all contributions' }
-  ];
+    // Create initial tasks (but don't fail if tasks creation fails)
+    const initialTasks = [
+      { content: '📝 Document basic greetings and common phrases' },
+      { content: '🎙️ Record pronunciation guides for the alphabet/syllables' },
+      { content: '📚 Collect traditional stories or folklore' },
+      { content: '🗣️ Interview native speakers about language history' },
+      { content: '📖 Create vocabulary list for everyday objects' },
+      { content: '🎵 Document traditional songs or poems' },
+      { content: '👥 Find and connect with language community members' },
+      { content: '📸 Document written forms if they exist' },
+      { content: '🌍 Map dialect variations by region' },
+      { content: '✅ Review and verify all contributions' }
+    ];
 
-  await taskadeClient.createTasks(project.id, initialTasks);
+    try {
+      await taskadeClient.createTasks(project.id, initialTasks);
+    } catch (taskError) {
+      console.error('Warning: Could not create initial tasks:', taskError);
+      // Continue even if tasks creation fails
+    }
 
-  // Construct the project URL
-  const projectUrl = `https://taskade.com/d/${project.id}`;
+    // Construct the project URL
+    const projectUrl = `https://www.taskade.com/d/${project.id}`;
 
-  return {
-    projectId: project.id,
-    projectUrl
-  };
+    return {
+      projectId: project.id,
+      projectUrl
+    };
+  } catch (error) {
+    console.error('Error in createLanguagePreservationProject:', error);
+    throw error;
+  }
 }
 
 export async function syncTaskProgress(
