@@ -72,14 +72,6 @@ export function setupAuth(app: Express) {
 
   app.use(session(sessionSettings));
   
-  // Log session middleware setup
-  console.log("[Auth Setup] Session middleware configured with:", {
-    secure: sessionSettings.cookie?.secure,
-    sameSite: sessionSettings.cookie?.sameSite,
-    httpOnly: sessionSettings.cookie?.httpOnly,
-    proxy: sessionSettings.proxy,
-    env: process.env.NODE_ENV
-  });
 
   // Setup Replit auth if available  
   if (process.env.REPL_ID && process.env.REPLIT_DOMAINS) {
@@ -114,10 +106,9 @@ export function setupAuth(app: Express) {
         req.session.userId = user.id;
         req.session.save((saveErr) => {
           if (saveErr) {
-            console.error("[Replit Auth] Session save error:", saveErr);
+            console.error("Session save error:", saveErr);
             return res.status(500).json({ error: "Failed to save session" });
           }
-          console.log("[Replit Auth] User authenticated:", user.email, "ID:", user.id);
           res.json(req.user);
         });
       } catch (error) {
@@ -175,7 +166,7 @@ export function setupAuth(app: Express) {
       req.session.userId = user.id;
       req.session.save((saveErr) => {
         if (saveErr) {
-          console.error("[Register] Session save error:", saveErr);
+          console.error("Session save error:", saveErr);
           return res.status(500).json({ message: "Failed to save session" });
         }
         res.status(201).json(req.user);
@@ -225,7 +216,7 @@ export function setupAuth(app: Express) {
       req.session.userId = user.id;
       req.session.save((saveErr) => {
         if (saveErr) {
-          console.error("[Login] Session save error:", saveErr);
+          console.error("Session save error:", saveErr);
           return res.status(500).json({ message: "Failed to save session" });
         }
         res.json(req.user);
@@ -256,29 +247,22 @@ export function setupAuth(app: Express) {
       }
 
       // Verify the Firebase ID token
-      console.log("[Google Auth] Starting Firebase verification");
       const firebaseAdmin = await import("firebase-admin");
       const admin = firebaseAdmin.default || firebaseAdmin;
       
       // Check if Firebase Admin is already initialized
       const apps = admin.apps || [];
       if (apps.length === 0) {
-        console.log("[Google Auth] Initializing Firebase Admin SDK");
         const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT;
         
         if (!serviceAccountJson) {
-          console.error("[Google Auth] FIREBASE_SERVICE_ACCOUNT env var not found");
           throw new Error("FIREBASE_SERVICE_ACCOUNT not found");
         }
-        
-        console.log("[Google Auth] Service account JSON length:", serviceAccountJson.length);
         
         let serviceAccount;
         try {
           serviceAccount = JSON.parse(serviceAccountJson);
-          console.log("[Google Auth] Service account parsed, project_id:", serviceAccount.project_id);
         } catch (parseError) {
-          console.error("[Google Auth] Failed to parse service account JSON:", parseError);
           throw new Error("Invalid JSON in FIREBASE_SERVICE_ACCOUNT");
         }
         
@@ -286,14 +270,9 @@ export function setupAuth(app: Express) {
           credential: admin.credential.cert(serviceAccount),
           projectId: serviceAccount.project_id,
         });
-        console.log("[Google Auth] Firebase Admin SDK initialized");
-      } else {
-        console.log("[Google Auth] Firebase Admin SDK already initialized");
       }
 
-      console.log("[Google Auth] Verifying ID token...");
       const decoded = await admin.auth().verifyIdToken(idToken);
-      console.log("[Google Auth] Token verified for uid:", decoded.uid);
       const { uid, email, name, picture } = decoded;
       
       if (!email || !decoded.email_verified) {
@@ -324,38 +303,24 @@ export function setupAuth(app: Express) {
         profileImageUrl: user.profileImageUrl || undefined,
       };
 
-      // Simple approach - just set userId and save
+      // Set userId and save session
       req.session.userId = user.id;
-      console.log("[Auth Debug] Setting userId:", user.id, "for user:", user.email);
       
       req.session.save((saveErr) => {
         if (saveErr) {
-          console.error("[Auth Debug] Session save error:", saveErr);
+          console.error("Session save error:", saveErr);
           return res.status(500).json({ 
-            error: "Failed to save session", 
-            details: saveErr.message,
-            sessionId: req.sessionID
+            error: "Failed to save session"
           });
         }
-        console.log("[Auth Debug] Session saved successfully");
-        console.log("[Auth Debug] Session data:", { 
-          sessionId: req.sessionID,
-          userId: req.session.userId,
-          hasStore: !!req.session.save
-        });
         res.json(req.user);
       });
     } catch (error) {
-      console.error("[Google Auth] Full error details:", error);
-      console.error("[Google Auth] Error stack:", error instanceof Error ? error.stack : "No stack trace");
+      console.error("Google auth error:", error);
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
-      
-      // Temporarily show error details in production for debugging
       res.status(500).json({ 
         error: "Failed to login with Google",
-        details: errorMessage,
-        env: process.env.NODE_ENV,
-        hasServiceAccount: !!process.env.FIREBASE_SERVICE_ACCOUNT
+        details: process.env.NODE_ENV === "development" ? errorMessage : undefined
       });
     }
   });
@@ -386,63 +351,6 @@ export function setupAuth(app: Express) {
       console.error("Get user error:", error);
       res.status(500).json({ message: "Failed to get user" });
     }
-  });
-  
-  // Clear session for testing - useful for debugging auth issues
-  app.post("/api/auth/test/clear", (req: AuthRequest, res: Response) => {
-    req.session.destroy((err) => {
-      if (err) {
-        return res.status(500).json({ error: "Failed to clear session" });
-      }
-      res.clearCookie("connect.sid");
-      res.json({ message: "Session cleared successfully" });
-    });
-  });
-
-  // Test authentication endpoint for production debugging
-  app.get("/api/auth/test", async (req: AuthRequest, res: Response) => {
-    const headers = req.headers;
-    
-    // Try to retrieve session data from store directly
-    let sessionData = null;
-    if (req.sessionID && sessionStore) {
-      try {
-        sessionData = await new Promise((resolve, reject) => {
-          sessionStore.get(req.sessionID, (err, data) => {
-            if (err) reject(err);
-            else resolve(data);
-          });
-        });
-      } catch (err) {
-        console.error("Error fetching session from store:", err);
-      }
-    }
-    
-    res.json({
-      sessionId: req.sessionID,
-      hasSession: !!req.session,
-      userId: req.session?.userId,
-      sessionKeys: req.session ? Object.keys(req.session) : [],
-      sessionFromStore: sessionData ? { 
-        hasUserId: !!(sessionData as any).userId,
-        userId: (sessionData as any).userId,
-        keys: Object.keys(sessionData)
-      } : null,
-      isProduction: process.env.NODE_ENV === "production",
-      domain: process.env.REPLIT_DOMAINS,
-      replId: process.env.REPL_ID,
-      deploymentId: process.env.REPLIT_DEPLOYMENT_ID || "not-set",
-      actualDeploymentId: process.env.DEPLOYMENT_ID || process.env.REPLIT_DEPLOYMENT_ID || "none",
-      databaseUrl: process.env.DATABASE_URL ? "present" : "missing",
-      origin: headers.origin,
-      referer: headers.referer,
-      host: headers.host,
-      forwardedFor: headers['x-forwarded-for'],
-      forwardedProto: headers['x-forwarded-proto'],
-      cookie: headers.cookie ? 'present' : 'missing',
-      sessionCookie: headers.cookie?.includes('connect.sid') ? 'found' : 'not found',
-      cookieValue: headers.cookie?.split('connect.sid=')[1]?.split(';')[0] || 'not found',
-    });
   });
 }
 
