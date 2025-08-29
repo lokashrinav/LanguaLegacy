@@ -451,6 +451,31 @@ export class DatabaseStorage implements IStorage {
     return results.map(r => r.user_lesson_completion);
   }
 
+  async getRecentLessonCompletions(userId: string, limit: number = 5): Promise<any[]> {
+    const results = await db
+      .select({
+        completion: userLessonCompletion,
+        lesson: lessons,
+        language: languages
+      })
+      .from(userLessonCompletion)
+      .innerJoin(lessons, eq(userLessonCompletion.lessonId, lessons.id))
+      .innerJoin(languages, eq(lessons.languageId, languages.id))
+      .where(eq(userLessonCompletion.userId, userId))
+      .orderBy(desc(userLessonCompletion.completedAt))
+      .limit(limit);
+    
+    return results.map(r => ({
+      id: r.completion.id,
+      type: 'lesson',
+      lessonTitle: r.lesson.title,
+      languageName: r.language.name,
+      level: r.lesson.level,
+      completedAt: r.completion.completedAt,
+      score: r.completion.score
+    }));
+  }
+
   async markLessonComplete(completion: InsertUserLessonCompletion): Promise<UserLessonCompletion> {
     const [created] = await db
       .insert(userLessonCompletion)

@@ -404,6 +404,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get('/api/recent-completions', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const limit = parseInt(req.query.limit as string) || 5;
+      
+      const completions = await storage.getRecentLessonCompletions(userId, limit);
+      res.json(completions);
+    } catch (error) {
+      console.error("Error fetching recent completions:", error);
+      res.status(500).json({ message: "Failed to fetch recent completions" });
+    }
+  });
+
   app.post('/api/lesson-completions', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;

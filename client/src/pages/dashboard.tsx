@@ -54,6 +54,11 @@ export default function Dashboard() {
     enabled: isAuthenticated && !!user?.id,
   });
 
+  const { data: recentLessonCompletions, isLoading: lessonCompletionsLoading } = useQuery<any[]>({
+    queryKey: ["/api/recent-completions"],
+    enabled: isAuthenticated,
+  });
+
   const { data: learningProgress, isLoading: progressLoading } = useQuery<any[]>({
     queryKey: ["/api/learning-progress"],
     enabled: isAuthenticated,
@@ -200,7 +205,7 @@ export default function Dashboard() {
                 </div>
               </CardHeader>
               <CardContent>
-                {contributionsLoading ? (
+                {(contributionsLoading || lessonCompletionsLoading) ? (
                   <div className="space-y-4">
                     {Array.from({ length: 3 }).map((_, i) => (
                       <div key={i} className="flex items-start space-x-4 p-4 bg-background rounded-lg animate-pulse">
@@ -212,45 +217,82 @@ export default function Dashboard() {
                       </div>
                     ))}
                   </div>
-                ) : recentContributions && recentContributions.length > 0 ? (
+                ) : (recentContributions && recentContributions.length > 0) || (recentLessonCompletions && recentLessonCompletions.length > 0) ? (
                   <div className="space-y-4">
-                    {recentContributions.map((contribution: any) => (
-                      <div key={contribution.id} className="flex items-start space-x-4 p-4 bg-background rounded-lg" data-testid={`activity-${contribution.id}`}>
+                    {/* Combine and sort activities by date */}
+                    {[
+                      ...(recentContributions || []).map((c: any) => ({ ...c, activityType: 'contribution' })),
+                      ...(recentLessonCompletions || []).map((l: any) => ({ ...l, activityType: 'lesson' }))
+                    ]
+                    .sort((a, b) => new Date(b.completedAt || b.createdAt).getTime() - new Date(a.completedAt || a.createdAt).getTime())
+                    .slice(0, 10)
+                    .map((activity: any) => (
+                      activity.activityType === 'lesson' ? (
+                        <div key={`lesson-${activity.id}`} className="flex items-start space-x-4 p-4 bg-background rounded-lg" data-testid={`activity-lesson-${activity.id}`}>
+                          <div className="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i className="fas fa-graduation-cap text-green-600 dark:text-green-400"></i>
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-1">
+                              <h4 className="font-medium text-foreground">
+                                Completed lesson: {activity.lessonTitle}
+                              </h4>
+                              <span className="text-sm text-muted-foreground">
+                                {new Date(activity.completedAt).toLocaleDateString()}
+                              </span>
+                            </div>
+                            <p className="text-sm text-muted-foreground mb-2">
+                              Language: {activity.languageName}
+                            </p>
+                            <div className="flex items-center space-x-2">
+                              <Badge variant="secondary" className="text-xs">
+                                {activity.level}
+                              </Badge>
+                              {activity.score && (
+                                <Badge variant="default" className="text-xs">
+                                  Score: {activity.score}%
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                      <div key={activity.id} className="flex items-start space-x-4 p-4 bg-background rounded-lg" data-testid={`activity-${activity.id}`}>
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                          contribution.type === 'audio' ? 'bg-primary/10' :
-                          contribution.type === 'text' ? 'bg-accent/10' :
+                          activity.type === 'audio' ? 'bg-primary/10' :
+                          activity.type === 'text' ? 'bg-accent/10' :
                           'bg-secondary/50'
                         }`}>
                           <i className={`fas ${
-                            contribution.type === 'audio' ? 'fa-microphone text-primary' :
-                            contribution.type === 'text' ? 'fa-language text-accent' :
+                            activity.type === 'audio' ? 'fa-microphone text-primary' :
+                            activity.type === 'text' ? 'fa-language text-accent' :
                             'fa-globe text-foreground'
                           }`}></i>
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center justify-between mb-1">
                             <h4 className="font-medium text-foreground">
-                              {contribution.type === 'audio' ? 'Added audio recording' :
-                               contribution.type === 'text' ? 'Added translation' :
+                              {activity.type === 'audio' ? 'Added audio recording' :
+                               activity.type === 'text' ? 'Added translation' :
                                'Added cultural context'}
                             </h4>
                             <span className="text-sm text-muted-foreground">
-                              {new Date(contribution.createdAt).toLocaleDateString()}
+                              {new Date(activity.createdAt).toLocaleDateString()}
                             </span>
                           </div>
                           <p className="text-sm text-muted-foreground mb-2">
-                            {contribution.originalText ? 
-                              `"${contribution.originalText.slice(0, 100)}${contribution.originalText.length > 100 ? '...' : ''}"` :
-                              contribution.translation ?
-                              `Translation: "${contribution.translation.slice(0, 100)}${contribution.translation.length > 100 ? '...' : ''}"` :
+                            {activity.originalText ? 
+                              `"${activity.originalText.slice(0, 100)}${activity.originalText.length > 100 ? '...' : ''}"` :
+                              activity.translation ?
+                              `Translation: "${activity.translation.slice(0, 100)}${activity.translation.length > 100 ? '...' : ''}"` :
                               'Cultural context contribution'
                             }
                           </p>
                           <div className="flex items-center space-x-2">
                             <Badge variant="secondary" className="text-xs">
-                              {contribution.category?.replace('_', ' ') || 'General'}
+                              {activity.category?.replace('_', ' ') || 'General'}
                             </Badge>
-                            {contribution.approved && (
+                            {activity.approved && (
                               <Badge variant="default" className="text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                                 Approved
                               </Badge>
@@ -258,6 +300,7 @@ export default function Dashboard() {
                           </div>
                         </div>
                       </div>
+                      )
                     ))}
                   </div>
                 ) : (
@@ -278,7 +321,7 @@ export default function Dashboard() {
                   </div>
                 )}
                 
-                {recentContributions && recentContributions.length > 0 && (
+                {((recentContributions && recentContributions.length > 0) || (recentLessonCompletions && recentLessonCompletions.length > 0)) && (
                   <div className="text-center mt-6">
                     <Button variant="ghost" data-testid="button-view-all-activity">
                       View All Activity
