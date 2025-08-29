@@ -167,19 +167,35 @@
     animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   }
   
-  /* Tab content transitions */
+  /* Tab content sliding transitions */
   [role="tabpanel"] {
-    animation: tabFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: slideIn 0.4s cubic-bezier(0.22, 1, 0.36, 1);
   }
   
-  @keyframes tabFadeIn {
+  @keyframes slideIn {
     from {
       opacity: 0;
-      transform: translateY(8px) scale(0.98);
+      transform: translateX(20px);
     }
     to {
       opacity: 1;
-      transform: translateY(0) scale(1);
+      transform: translateX(0);
+    }
+  }
+  
+  /* Alternative slide from left */
+  [role="tabpanel"]:first-child {
+    animation: slideInLeft 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  
+  @keyframes slideInLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
     }
   }
   
