@@ -42,6 +42,13 @@ interface LanguageContext {
   priority: 'high' | 'medium' | 'low';
 }
 
+interface UsageData {
+  usageCount: number;
+  remaining: number | 'unlimited';
+  limit: number | 'unlimited';
+  isAdmin: boolean;
+}
+
 export default function AIInterviewPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -65,14 +72,16 @@ export default function AIInterviewPage() {
   });
   
   // Fetch AI interview usage
-  const { data: usageData, refetch: refetchUsage } = useQuery({
+  const { data: usageData, refetch: refetchUsage } = useQuery<UsageData>({
     queryKey: ["/api/ai/interview/usage"],
-    onSuccess: (data: any) => {
-      if (!data.isAdmin && data.remaining === 0) {
-        setLimitReached(true);
-      }
-    }
   });
+  
+  // Handle usage data changes
+  useEffect(() => {
+    if (usageData && !usageData.isAdmin && usageData.remaining === 0) {
+      setLimitReached(true);
+    }
+  }, [usageData]);
 
   // AI conversation mutation
   const conversationMutation = useMutation({
@@ -181,7 +190,7 @@ What language would you like to document today? I'll check our database and ask 
     if (!inputText.trim()) return;
     
     // Check if limit reached for non-admin users
-    if (limitReached && usageData && !usageData.isAdmin) {
+    if (limitReached && usageData && !usageData?.isAdmin) {
       toast({
         title: "Question Limit Reached",
         description: "You've used all 3 of your questions. Admin users have unlimited access.",
@@ -317,31 +326,31 @@ What language would you like to document today? I'll check our database and ask 
     if (!usageData) return null;
     
     return (
-      <Card className="mb-4 border-l-4" style={{ borderLeftColor: usageData.isAdmin ? 'hsl(120 60% 50%)' : (limitReached ? 'hsl(0 60% 50%)' : 'hsl(45 60% 50%)') }}>
+      <Card className="mb-4 border-l-4" style={{ borderLeftColor: usageData?.isAdmin ? 'hsl(120 60% 50%)' : (limitReached ? 'hsl(0 60% 50%)' : 'hsl(45 60% 50%)') }}>
         <CardContent className="pt-4">
           <div className="flex items-center justify-between">
             <div className="text-sm">
               <div className="font-semibold mb-1">AI Question Limit</div>
               <div className="text-muted-foreground">
-                {usageData.isAdmin ? (
+                {usageData?.isAdmin ? (
                   <span className="text-green-600">Admin User - Unlimited Questions</span>
                 ) : (
                   <>
                     {limitReached ? (
                       <span className="text-red-600">
-                        Limit reached: {usageData.usageCount} / {usageData.limit} questions used
+                        Limit reached: {usageData?.usageCount} / {usageData?.limit} questions used
                       </span>
                     ) : (
                       <span>
-                        {usageData.remaining} question{usageData.remaining !== 1 ? 's' : ''} remaining ({usageData.usageCount} / {usageData.limit} used)
+                        {usageData?.remaining} question{usageData?.remaining !== 1 ? 's' : ''} remaining ({usageData?.usageCount} / {usageData?.limit} used)
                       </span>
                     )}
                   </>
                 )}
               </div>
             </div>
-            <Badge variant={usageData.isAdmin ? "default" : (limitReached ? "destructive" : "secondary")}>
-              {usageData.isAdmin ? "ADMIN" : `${usageData.remaining} left`}
+            <Badge variant={usageData?.isAdmin ? "default" : (limitReached ? "destructive" : "secondary")}>
+              {usageData?.isAdmin ? "ADMIN" : `${usageData?.remaining} left`}
             </Badge>
           </div>
         </CardContent>
